@@ -1,0 +1,603 @@
+/* ==========================================================================
+   Friends Central Stylesheet - 2026 Modern UI
+   ========================================================================== */
+
+/* تعريف المتغيرات والألوان (يدعم الوضع الفاتح الافتراضي والداكن التلقائي) */
+:root {
+    --bg-main: #f0f2f5;
+    --bg-surface: #ffffff;
+    --text-primary: #1c1e21;
+    --text-secondary: #65676b;
+    --accent-color: #0076ff;
+    --accent-hover: #005cd6;
+    --border-color: #e4e6eb;
+    --toast-bg: rgba(0, 0, 0, 0.85);
+    --toast-text: #ffffff;
+    --shimmer-base: #e1e4e8;
+    --shimmer-glow: #f2f3f5;
+    --radius-lg: 16px;
+    --radius-md: 12px;
+    --radius-sm: 8px;
+    --transition-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* التحويل التلقائي للوضع الداكن (Dark Mode) حسب جهاز المستخدم */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg-main: #0b0c10;
+        --bg-surface: #1f2833;
+        --text-primary: #c5c6c7;
+        --text-secondary: #9aa0a6;
+        --accent-color: #45f3ff;
+        --accent-hover: #00cfd6;
+        --border-color: #2c3540;
+        --toast-bg: #ffffff;
+        --toast-text: #0b0c10;
+        --shimmer-base: #2c3540;
+        --shimmer-glow: #374151;
+    }
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+    line-height: 1.4;
+    padding-top: 60px; /* مسافة من أجل الهيدر الثابت */
+    padding-bottom: 80px; /* مسافة من أجل النيفبار السفلي */
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* --- الهيدر العلوي الثابت --- */
+.main-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background-color: var(--bg-surface);
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 16px;
+    z-index: 100;
+}
+
+.app-logo {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--accent-color);
+    text-decoration: none;
+    letter-spacing: -0.5px;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.circle-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    background-color: var(--bg-main);
+    cursor: pointer;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.nav-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--accent-color);
+}
+
+/* --- الحاوية الرئيسية --- */
+.app-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* --- قسم الستوري الاحترافي (Stories) --- */
+.stories-container {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    padding: 4px 0;
+    scrollbar-width: none; /* إخفاء شريط السحب */
+}
+.stories-container::-webkit-scrollbar {
+    display: none;
+}
+
+.story-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 68px;
+    cursor: pointer;
+}
+
+.story-avatar-wrapper {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    padding: 2px;
+    border: 2.5px solid var(--accent-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--bg-surface);
+}
+
+.story-avatar-wrapper img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.story-username {
+    font-size: 11px;
+    text-align: center;
+    margin-top: 4px;
+    color: var(--text-secondary);
+    max-width: 68px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* --- رف الملاحظات السريعة (Notes) --- */
+.notes-wrapper {
+    background-color: var(--bg-surface);
+    border-radius: var(--radius-md);
+    padding: 12px;
+    border: 1px solid var(--border-color);
+}
+
+.add-note-inline {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.add-note-inline input {
+    flex: 1;
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+    padding: 10px 14px;
+    border-radius: 20px;
+    outline: none;
+    font-size: 13px;
+}
+
+.notes-scroller {
+    display: flex;
+    gap: 16px;
+    overflow-x: auto;
+    padding: 6px 0;
+}
+
+.note-bubble-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    min-width: 60px;
+}
+
+.note-text-cloud {
+    background-color: var(--accent-color);
+    color: #ffffff;
+    font-size: 10px;
+    padding: 4px 8px;
+    border-radius: 10px;
+    position: absolute;
+    top: -15px;
+    white-space: nowrap;
+    max-width: 90px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.note-avatar {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    margin-top: 12px;
+    border: 1px solid var(--border-color);
+}
+
+/* --- بطاقة إنشاء منشور --- */
+.create-post-box {
+    background-color: var(--bg-surface);
+    border-radius: var(--radius-lg);
+    padding: 16px;
+    border: 1px solid var(--border-color);
+}
+
+.post-input-row {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+}
+
+.user-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.create-post-box textarea {
+    flex: 1;
+    min-height: 70px;
+    border: none;
+    resize: none;
+    background: transparent;
+    color: var(--text-primary);
+    font-size: 15px;
+    outline: none;
+    padding-top: 8px;
+}
+
+.preview-zone {
+    position: relative;
+    margin-top: 12px;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    background-color: var(--bg-main);
+    max-height: 250px;
+}
+
+.preview-zone img, .preview-zone video {
+    width: 100%;
+    max-height: 250px;
+    object-fit: contain;
+}
+
+.close-preview {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(0,0,0,0.6);
+    color: white;
+    border: none;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 18px;
+}
+
+.post-actions-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-color);
+}
+
+.upload-label {
+    color: var(--text-secondary);
+    font-size: 14px;
+    cursor: pointer;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-primary {
+    background-color: var(--accent-color);
+    color: white;
+    border: none;
+    padding: 8px 18px;
+    border-radius: 20px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.btn-primary:hover {
+    background-color: var(--accent-hover);
+}
+
+/* --- تايملاين البوستات الرئيسي --- */
+.feed-card {
+    background-color: var(--bg-surface);
+    border-radius: var(--radius-lg);
+    padding: 16px;
+    border: 1px solid var(--border-color);
+    margin-bottom: 14px;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.card-user-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.post-meta h4 {
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.post-meta span {
+    font-size: 11px;
+    color: var(--text-secondary);
+}
+
+.post-body-text {
+    font-size: 15px;
+    margin-bottom: 12px;
+    white-space: pre-wrap;
+}
+
+.post-media-attachment {
+    width: 100%;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    margin-bottom: 12px;
+    cursor: pointer;
+}
+
+.post-media-attachment img, .post-media-attachment video {
+    width: 100%;
+    display: block;
+    max-height: 400px;
+    object-fit: cover;
+}
+
+.card-actions-bar {
+    display: flex;
+    border-top: 1px solid var(--border-color);
+    padding-top: 10px;
+    justify-content: space-around;
+}
+
+.action-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: var(--radius-sm);
+}
+.action-btn:hover {
+    background-color: var(--bg-main);
+}
+.action-btn.liked {
+    color: var(--accent-color);
+}
+
+/* --- صفيحة التعليقات المنسدلة من الأسفل (Bottom Sheet) --- */
+.backdrop {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 200;
+    display: none;
+    opacity: 0;
+    transition: opacity 0.3s var(--transition-smooth);
+}
+
+.bottom-sheet {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background-color: var(--bg-surface);
+    border-top-left-radius: var(--radius-lg);
+    border-top-right-radius: var(--radius-lg);
+    max-height: 80vh;
+    min-height: 50vh;
+    z-index: 201;
+    display: flex;
+    flex-direction: column;
+    transform: translateY(100%);
+    transition: transform 0.3s var(--transition-smooth);
+}
+
+/* تشغيل الصفيحة بالـ JS */
+.bottom-sheet.open { transform: translateY(0); }
+.backdrop.open { display: block; opacity: 1; }
+
+.sheet-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-color);
+    position: relative;
+    text-align: center;
+}
+
+.drag-handle {
+    width: 40px;
+    height: 4px;
+    background-color: var(--border-color);
+    border-radius: 2px;
+    margin: 0 auto 8px auto;
+}
+
+.close-sheet {
+    position: absolute;
+    top: 12px; left: 16px;
+    font-size: 22px;
+    cursor: pointer;
+    color: var(--text-secondary);
+}
+
+.sheet-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+}
+
+.comment-item {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 14px;
+    align-items: flex-start;
+}
+
+.comment-bubble {
+    background-color: var(--bg-main);
+    padding: 10px 14px;
+    border-radius: var(--radius-md);
+    flex: 1;
+}
+
+.sheet-footer {
+    padding: 12px 16px;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    gap: 8px;
+    background-color: var(--bg-surface);
+    padding-bottom: calc(12px + env(safe-area-inset-bottom)); /* دعم الآيفون الجديد */
+}
+
+.sheet-footer input {
+    flex: 1;
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+    padding: 10px 16px;
+    border-radius: 20px;
+    outline: none;
+}
+
+/* --- نظام عرض الصور الكبير (Lightbox) --- */
+.lightbox {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.95);
+    z-index: 300;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+#lightbox-img {
+    max-width: 100%;
+    max-height: 90vh;
+    border-radius: var(--radius-sm);
+    object-fit: contain;
+}
+
+.close-lightbox {
+    position: absolute;
+    top: 20px; right: 25px;
+    color: #fff;
+    font-size: 35px;
+    cursor: pointer;
+}
+
+/* --- نظام وميض التحميل الذكي (Shimmer Loading) --- */
+.shimmer-card {
+    background-color: var(--bg-surface);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    border: 1px solid var(--border-color);
+}
+
+.shimmer-line {
+    height: 14px;
+    background: linear-gradient(90deg, var(--shimmer-base) 25%, var(--shimmer-glow) 50%, var(--shimmer-base) 75%);
+    background-size: 200% 100%;
+    animation: shimmer-run 1.5s infinite linear;
+    border-radius: 4px;
+    margin-bottom: 12px;
+}
+.line-short { width: 40%; }
+.line-long { width: 90%; }
+
+@keyframes shimmer-run {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* --- نظام الـ Toasts الفوري للأخطاء والعمليات --- */
+.toast {
+    position: fixed;
+    top: -100px; left: 50%;
+    transform: translateX(-50%);
+    background-color: var(--toast-bg);
+    color: var(--toast-text);
+    padding: 10px 20px;
+    border-radius: 30px;
+    font-size: 13px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    z-index: 400;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    transition: top 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.toast.show { top: 20px; }
+
+/* --- شريط التنقل السفلي الاحترافي (Bottom Nav) --- */
+.bottom-nav {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    height: 65px;
+    background-color: var(--bg-surface);
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    z-index: 100;
+    padding-bottom: env(safe-area-inset-bottom);
+}
+
+.nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-decoration: none;
+    color: var(--text-secondary);
+    font-size: 11px;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+
+.nav-item span {
+    font-size: 20px;
+    margin-bottom: 2px;
+}
+
+.nav-item.active {
+    color: var(--accent-color);
+    font-weight: 700;
+}
