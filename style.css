@@ -1,40 +1,39 @@
 /* ==========================================================================
-   Friends Central Stylesheet - 2026 Modern UI
+   Friends Ultra-Clean UI Stylesheet - 2026 Edition
    ========================================================================== */
 
-/* تعريف المتغيرات والألوان (يدعم الوضع الفاتح الافتراضي والداكن التلقائي) */
 :root {
-    --bg-main: #f0f2f5;
+    --bg-main: #f4f6f9;
     --bg-surface: #ffffff;
-    --text-primary: #1c1e21;
-    --text-secondary: #65676b;
+    --text-primary: #1a1a1a;
+    --text-secondary: #737373;
     --accent-color: #0076ff;
     --accent-hover: #005cd6;
-    --border-color: #e4e6eb;
-    --toast-bg: rgba(0, 0, 0, 0.85);
+    --border-color: #e6e8eb;
+    --error-color: #ff3b30;
+    --success-color: #34c759;
+    --toast-bg: #1a1a1a;
     --toast-text: #ffffff;
-    --shimmer-base: #e1e4e8;
-    --shimmer-glow: #f2f3f5;
-    --radius-lg: 16px;
-    --radius-md: 12px;
+    --radius-lg: 20px;
+    --radius-md: 14px;
     --radius-sm: 8px;
-    --transition-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+    --shimmer-base: #e6e8eb;
+    --shimmer-glow: #f4f6f9;
 }
 
-/* التحويل التلقائي للوضع الداكن (Dark Mode) حسب جهاز المستخدم */
 @media (prefers-color-scheme: dark) {
     :root {
         --bg-main: #0b0c10;
-        --bg-surface: #1f2833;
-        --text-primary: #c5c6c7;
-        --text-secondary: #9aa0a6;
-        --accent-color: #45f3ff;
-        --accent-hover: #00cfd6;
-        --border-color: #2c3540;
+        --bg-surface: #12141c;
+        --text-primary: #f5f5f7;
+        --text-secondary: #a1a1a6;
+        --accent-color: #2f9fff;
+        --accent-hover: #0084ff;
+        --border-color: #22252a;
         --toast-bg: #ffffff;
         --toast-text: #0b0c10;
-        --shimmer-base: #2c3540;
-        --shimmer-glow: #374151;
+        --shimmer-base: #22252a;
+        --shimmer-glow: #2c3139;
     }
 }
 
@@ -49,18 +48,16 @@
 body {
     background-color: var(--bg-main);
     color: var(--text-primary);
-    line-height: 1.4;
-    padding-top: 60px; /* مسافة من أجل الهيدر الثابت */
-    padding-bottom: 80px; /* مسافة من أجل النيفبار السفلي */
-    transition: background-color 0.3s ease, color 0.3s ease;
+    line-height: 1.5;
+    padding-top: 65px;
+    padding-bottom: 75px;
+    transition: background-color 0.3s, color 0.3s;
 }
 
-/* --- الهيدر العلوي الثابت --- */
+/* --- الهيدر العلوي النظيف --- */
 .main-header {
     position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
+    top: 0; left: 0; right: 0;
     height: 60px;
     background-color: var(--bg-surface);
     border-bottom: 1px solid var(--border-color);
@@ -68,11 +65,11 @@ body {
     justify-content: space-between;
     align-items: center;
     padding: 0 16px;
-    z-index: 100;
+    z-index: 1000;
 }
 
 .app-logo {
-    font-size: 24px;
+    font-size: 26px;
     font-weight: 800;
     color: var(--accent-color);
     text-decoration: none;
@@ -86,16 +83,29 @@ body {
 }
 
 .circle-btn {
-    width: 40px;
-    height: 40px;
+    width: 38px;
+    height: 38px;
     border-radius: 50%;
     border: none;
     background-color: var(--bg-main);
+    color: var(--text-primary);
     cursor: pointer;
-    font-size: 18px;
+    font-size: 16px;
     display: flex;
     align-items: center;
     justify-content: center;
+    position: relative;
+}
+
+.circle-btn .badge {
+    position: absolute;
+    top: -2px; right: -2px;
+    background-color: var(--error-color);
+    color: white;
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-weight: bold;
 }
 
 .nav-avatar {
@@ -103,12 +113,17 @@ body {
     height: 38px;
     border-radius: 50%;
     object-fit: cover;
-    border: 2px solid var(--accent-color);
+    border: 2px solid var(--border-color);
+    cursor: pointer;
+    transition: border-color 0.2s;
+}
+.nav-avatar:hover {
+    border-color: var(--accent-color);
 }
 
-/* --- الحاوية الرئيسية --- */
+/* --- الحاوية المركزية للتطبيق --- */
 .app-container {
-    max-width: 600px;
+    max-width: 550px;
     margin: 0 auto;
     padding: 12px;
     display: flex;
@@ -116,150 +131,133 @@ body {
     gap: 16px;
 }
 
-/* --- قسم الستوري الاحترافي (Stories) --- */
-.stories-container {
-    display: flex;
-    gap: 12px;
-    overflow-x: auto;
-    padding: 4px 0;
-    scrollbar-width: none; /* إخفاء شريط السحب */
-}
-.stories-container::-webkit-scrollbar {
-    display: none;
-}
-
-.story-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    min-width: 68px;
-    cursor: pointer;
-}
-
-.story-avatar-wrapper {
-    width: 64px;
-    height: 64px;
-    border-radius: 50%;
-    padding: 2px;
-    border: 2.5px solid var(--accent-color);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: var(--bg-surface);
-}
-
-.story-avatar-wrapper img {
+/* --- شريط البحث الفخم --- */
+.search-section {
     width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    object-fit: cover;
+}
+.search-bar-wrapper {
+    position: relative;
+    width: 100%;
+}
+.search-bar-wrapper input {
+    width: 100%;
+    padding: 12px 16px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-surface);
+    color: var(--text-primary);
+    outline: none;
+    font-size: 14px;
+    transition: border-color 0.2s;
+}
+.search-bar-wrapper input:focus {
+    border-color: var(--accent-color);
+}
+.search-results-box {
+    position: absolute;
+    top: 52px; left: 0; right: 0;
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    max-height: 250px;
+    overflow-y: auto;
+    z-index: 900;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
 }
 
-.story-username {
-    font-size: 11px;
-    text-align: center;
-    margin-top: 4px;
-    color: var(--text-secondary);
-    max-width: 68px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-/* --- رف الملاحظات السريعة (Notes) --- */
+/* --- رف الملاحظات الذكي (Instagram Notes Style) --- */
 .notes-wrapper {
     background-color: var(--bg-surface);
-    border-radius: var(--radius-md);
-    padding: 12px;
+    border-radius: var(--radius-lg);
+    padding: 16px;
     border: 1px solid var(--border-color);
 }
-
 .add-note-inline {
     display: flex;
     gap: 8px;
-    margin-bottom: 12px;
+    margin-bottom: 14px;
 }
-
 .add-note-inline input {
     flex: 1;
     border: 1px solid var(--border-color);
     background-color: var(--bg-main);
     color: var(--text-primary);
-    padding: 10px 14px;
+    padding: 10px 16px;
     border-radius: 20px;
     outline: none;
     font-size: 13px;
 }
-
 .notes-scroller {
     display: flex;
     gap: 16px;
     overflow-x: auto;
-    padding: 6px 0;
+    padding: 4px 0;
+    scrollbar-width: none;
 }
+.notes-scroller::-webkit-scrollbar { display: none; }
 
 .note-bubble-item {
     display: flex;
     flex-direction: column;
     align-items: center;
     position: relative;
-    min-width: 60px;
+    min-width: 65px;
+    cursor: pointer;
 }
-
 .note-text-cloud {
-    background-color: var(--accent-color);
-    color: #ffffff;
-    font-size: 10px;
-    padding: 4px 8px;
-    border-radius: 10px;
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+    font-size: 11px;
+    padding: 6px 10px;
+    border-radius: 14px;
+    border: 1px solid var(--border-color);
     position: absolute;
-    top: -15px;
+    top: -20px;
     white-space: nowrap;
-    max-width: 90px;
+    max-width: 100px;
     overflow: hidden;
     text-overflow: ellipsis;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.02);
 }
-
 .note-avatar {
-    width: 45px;
-    height: 45px;
+    width: 48px;
+    height: 48px;
     border-radius: 50%;
-    margin-top: 12px;
+    margin-top: 16px;
     border: 1px solid var(--border-color);
+    object-fit: cover;
 }
 
-/* --- بطاقة إنشاء منشور --- */
+/* --- بطاقة إنشاء منشور نظيفة --- */
 .create-post-box {
     background-color: var(--bg-surface);
     border-radius: var(--radius-lg);
     padding: 16px;
     border: 1px solid var(--border-color);
 }
-
 .post-input-row {
     display: flex;
     gap: 12px;
     align-items: flex-start;
 }
-
 .user-avatar {
-    width: 44px;
-    height: 44px;
+    width: 42px;
+    height: 42px;
     border-radius: 50%;
     object-fit: cover;
+    border: 1px solid var(--border-color);
+    cursor: pointer;
 }
-
 .create-post-box textarea {
     flex: 1;
-    min-height: 70px;
+    min-height: 60px;
     border: none;
     resize: none;
     background: transparent;
     color: var(--text-primary);
     font-size: 15px;
     outline: none;
-    padding-top: 8px;
+    padding-top: 6px;
 }
 
 .preview-zone {
@@ -268,98 +266,99 @@ body {
     border-radius: var(--radius-md);
     overflow: hidden;
     background-color: var(--bg-main);
-    max-height: 250px;
 }
-
 .preview-zone img, .preview-zone video {
     width: 100%;
     max-height: 250px;
     object-fit: contain;
 }
-
 .close-preview {
     position: absolute;
-    top: 8px;
-    right: 8px;
+    top: 8px; right: 8px;
     background: rgba(0,0,0,0.6);
     color: white;
     border: none;
-    width: 30px;
-    height: 30px;
+    width: 28px; height: 28px;
     border-radius: 50%;
     cursor: pointer;
-    font-size: 18px;
 }
 
 .post-actions-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: 14px;
+    margin-top: 12px;
     padding-top: 12px;
     border-top: 1px solid var(--border-color);
 }
-
 .upload-label {
     color: var(--text-secondary);
-    font-size: 14px;
+    font-size: 13px;
     cursor: pointer;
     font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 6px;
 }
-
 .btn-primary {
     background-color: var(--accent-color);
     color: white;
     border: none;
-    padding: 8px 18px;
-    border-radius: 20px;
+    padding: 8px 20px;
+    border-radius: 24px;
     font-weight: 600;
     cursor: pointer;
+    font-size: 13px;
     transition: background 0.2s;
 }
-.btn-primary:hover {
-    background-color: var(--accent-hover);
-}
+.btn-primary:hover { background-color: var(--accent-hover); }
 
-/* --- تايملاين البوستات الرئيسي --- */
+/* --- كروت عرض المنشورات (تايملاين مطابق لتصميمك) --- */
 .feed-card {
     background-color: var(--bg-surface);
     border-radius: var(--radius-lg);
     padding: 16px;
     border: 1px solid var(--border-color);
-    margin-bottom: 14px;
 }
-
 .card-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 12px;
 }
-
 .card-user-info {
     display: flex;
     align-items: center;
     gap: 10px;
 }
-
 .post-meta h4 {
     font-size: 14px;
     font-weight: 700;
+    cursor: pointer;
 }
-
+.post-meta h4:hover { color: var(--accent-color); }
 .post-meta span {
     font-size: 11px;
     color: var(--text-secondary);
+    display: block;
+}
+.follow-btn-inline {
+    background-color: var(--bg-main);
+    color: var(--accent-color);
+    border: none;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
 }
 
 .post-body-text {
-    font-size: 15px;
+    font-size: 14px;
     margin-bottom: 12px;
     white-space: pre-wrap;
+}
+.hashtag {
+    color: var(--accent-color);
+    text-decoration: none;
+    font-weight: 600;
 }
 
 .post-media-attachment {
@@ -367,109 +366,86 @@ body {
     border-radius: var(--radius-md);
     overflow: hidden;
     margin-bottom: 12px;
-    cursor: pointer;
+    border: 1px solid var(--border-color);
 }
-
 .post-media-attachment img, .post-media-attachment video {
     width: 100%;
     display: block;
-    max-height: 400px;
+    max-height: 450px;
     object-fit: cover;
+    cursor: pointer;
 }
 
 .card-actions-bar {
     display: flex;
     border-top: 1px solid var(--border-color);
     padding-top: 10px;
-    justify-content: space-around;
+    justify-content: space-between;
 }
-
 .action-btn {
     background: transparent;
     border: none;
     color: var(--text-secondary);
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 600;
     cursor: pointer;
     display: flex;
     align-items: center;
     gap: 6px;
-    padding: 6px 12px;
-    border-radius: var(--radius-sm);
+    padding: 6px 8px;
 }
-.action-btn:hover {
-    background-color: var(--bg-main);
-}
-.action-btn.liked {
-    color: var(--accent-color);
-}
+.action-btn.liked { color: var(--error-color); }
+.action-btn.saved { color: #ff9500; }
 
-/* --- صفيحة التعليقات المنسدلة من الأسفل (Bottom Sheet) --- */
+/* --- صفيحة التعليقات السفلية الديناميكية --- */
 .backdrop {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.5);
-    z-index: 200;
+    background: rgba(0,0,0,0.4);
+    z-index: 2000;
     display: none;
     opacity: 0;
-    transition: opacity 0.3s var(--transition-smooth);
+    transition: opacity 0.3s;
 }
-
 .bottom-sheet {
     position: fixed;
     bottom: 0; left: 0; right: 0;
     background-color: var(--bg-surface);
     border-top-left-radius: var(--radius-lg);
     border-top-right-radius: var(--radius-lg);
-    max-height: 80vh;
+    max-height: 75vh;
     min-height: 50vh;
-    z-index: 201;
+    z-index: 2001;
     display: flex;
     flex-direction: column;
     transform: translateY(100%);
-    transition: transform 0.3s var(--transition-smooth);
+    transition: transform 0.3s;
 }
-
-/* تشغيل الصفيحة بالـ JS */
 .bottom-sheet.open { transform: translateY(0); }
 .backdrop.open { display: block; opacity: 1; }
 
 .sheet-header {
-    padding: 12px 16px;
+    padding: 14px;
     border-bottom: 1px solid var(--border-color);
     position: relative;
     text-align: center;
 }
-
 .drag-handle {
-    width: 40px;
-    height: 4px;
+    width: 36px; height: 4px;
     background-color: var(--border-color);
     border-radius: 2px;
     margin: 0 auto 8px auto;
 }
-
 .close-sheet {
     position: absolute;
-    top: 12px; left: 16px;
-    font-size: 22px;
-    cursor: pointer;
-    color: var(--text-secondary);
+    top: 14px; left: 16px;
+    font-size: 20px; cursor: pointer;
 }
-
-.sheet-body {
-    flex: 1;
-    overflow-y: auto;
-    padding: 16px;
-}
+.sheet-body { flex: 1; overflow-y: auto; padding: 16px; }
 
 .comment-item {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 14px;
-    align-items: flex-start;
+    display: flex; gap: 10px; margin-bottom: 12px;
 }
-
 .comment-bubble {
     background-color: var(--bg-main);
     padding: 10px 14px;
@@ -478,14 +454,11 @@ body {
 }
 
 .sheet-footer {
-    padding: 12px 16px;
+    padding: 12px;
     border-top: 1px solid var(--border-color);
-    display: flex;
-    gap: 8px;
+    display: flex; gap: 8px;
     background-color: var(--bg-surface);
-    padding-bottom: calc(12px + env(safe-area-inset-bottom)); /* دعم الآيفون الجديد */
 }
-
 .sheet-footer input {
     flex: 1;
     border: 1px solid var(--border-color);
@@ -496,91 +469,18 @@ body {
     outline: none;
 }
 
-/* --- نظام عرض الصور الكبير (Lightbox) --- */
-.lightbox {
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.95);
-    z-index: 300;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-}
-
-#lightbox-img {
-    max-width: 100%;
-    max-height: 90vh;
-    border-radius: var(--radius-sm);
-    object-fit: contain;
-}
-
-.close-lightbox {
-    position: absolute;
-    top: 20px; right: 25px;
-    color: #fff;
-    font-size: 35px;
-    cursor: pointer;
-}
-
-/* --- نظام وميض التحميل الذكي (Shimmer Loading) --- */
-.shimmer-card {
-    background-color: var(--bg-surface);
-    border-radius: var(--radius-lg);
-    padding: 20px;
-    border: 1px solid var(--border-color);
-}
-
-.shimmer-line {
-    height: 14px;
-    background: linear-gradient(90deg, var(--shimmer-base) 25%, var(--shimmer-glow) 50%, var(--shimmer-base) 75%);
-    background-size: 200% 100%;
-    animation: shimmer-run 1.5s infinite linear;
-    border-radius: 4px;
-    margin-bottom: 12px;
-}
-.line-short { width: 40%; }
-.line-long { width: 90%; }
-
-@keyframes shimmer-run {
-    0% { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
-}
-
-/* --- نظام الـ Toasts الفوري للأخطاء والعمليات --- */
-.toast {
-    position: fixed;
-    top: -100px; left: 50%;
-    transform: translateX(-50%);
-    background-color: var(--toast-bg);
-    color: var(--toast-text);
-    padding: 10px 20px;
-    border-radius: 30px;
-    font-size: 13px;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    z-index: 400;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
-    transition: top 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-.toast.show { top: 20px; }
-
-/* --- شريط التنقل السفلي الاحترافي (Bottom Nav) --- */
+/* --- شريط التنقل السفلي الاحترافي --- */
 .bottom-nav {
     position: fixed;
     bottom: 0; left: 0; right: 0;
-    height: 65px;
+    height: 60px;
     background-color: var(--bg-surface);
     border-top: 1px solid var(--border-color);
     display: flex;
     justify-content: space-around;
     align-items: center;
-    z-index: 100;
-    padding-bottom: env(safe-area-inset-bottom);
+    z-index: 1000;
 }
-
 .nav-item {
     display: flex;
     flex-direction: column;
@@ -589,15 +489,38 @@ body {
     color: var(--text-secondary);
     font-size: 11px;
     font-weight: 500;
-    transition: color 0.2s;
 }
+.nav-item span { font-size: 20px; margin-bottom: 1px; }
+.nav-item.active { color: var(--accent-color); font-weight: 700; }
 
-.nav-item span {
-    font-size: 20px;
-    margin-bottom: 2px;
+/* --- نظام الـ Lightbox للأبعاد الكاملة --- */
+.lightbox {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.9); z-index: 3000;
+    display: flex; align-items: center; justify-content: center;
 }
+#lightbox-img { max-width: 95%; max-height: 85vh; border-radius: var(--radius-sm); }
+.close-lightbox { position: absolute; top: 20px; right: 20px; color: #fff; font-size: 30px; cursor: pointer; }
 
-.nav-item.active {
-    color: var(--accent-color);
-    font-weight: 700;
+/* --- الـ Shimmer Effect الذكي للتحميل --- */
+.shimmer-card { background-color: var(--bg-surface); border-radius: var(--radius-lg); padding: 20px; border: 1px solid var(--border-color); }
+.shimmer-line { height: 12px; background: linear-gradient(90deg, var(--shimmer-base) 25%, var(--shimmer-glow) 50%, var(--shimmer-base) 75%); background-size: 200% 100%; animation: shimmer-run 1.5s infinite linear; border-radius: 4px; margin-bottom: 10px; }
+.line-short { width: 35%; } .line-long { width: 85%; }
+@keyframes shimmer-run { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+/* --- التوست الإشعاري المنسق --- */
+.toast {
+    position: fixed; top: -100px; left: 50%;
+    transform: translateX(-50%);
+    background-color: var(--toast-bg);
+    color: var(--toast-text);
+    padding: 10px 24px;
+    border-radius: 30px;
+    font-size: 13px; font-weight: 600;
+    display: flex; align-items: center; gap: 8px;
+    z-index: 4000;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    transition: top 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
+.toast.show { top: 16px; }
