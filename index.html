@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Friends | منصة التواصل الاحترافية</title>
+    
+    <!-- استدعاء ملف التصميم المركزي الجديد -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- التوست الإشعاري الذكي (Toasts) -->
+    <div id="system-toast" class="toast">
+        <span id="toast-icon">✨</span>
+        <span id="toast-text">جاري التحميل...</span>
+    </div>
+
+    <!-- نافذة عرض الصور بكامل الشاشة (Lightbox) -->
+    <div id="media-lightbox" class="lightbox" style="display: none;">
+        <span class="close-lightbox">&times;</span>
+        <img id="lightbox-img" src="" alt="عرض كامل بمقاس الشاشة">
+    </div>
+
+    <!-- الهيدر العلوي الثابت (Header) -->
+    <header class="main-header">
+        <div class="header-right">
+            <a href="index.html" class="app-logo">Friends</a>
+        </div>
+        <div class="header-left">
+            <button id="theme-toggle-btn" class="circle-btn" title="تبديل المظهر">🌓</button>
+            <img id="user-header-avatar" class="nav-avatar" src="https://img.icons8.com/illustrations/style=flat/color=blue/card-user.png" alt="بروفايلك">
+        </div>
+    </header>
+
+    <!-- الحاوية الرئيسية للتطبيق -->
+    <main class="app-container">
+        
+        <!-- قسم الستوري الجديد (Stories) -->
+        <section class="stories-container" id="stories-wrapper">
+            <!-- الستوريز الذكية بتترسم هنا بالـ JavaScript تلقائياً -->
+        </section>
+
+        <!-- قسم الملاحظات الفورية السريعة (Notes) -->
+        <section class="notes-wrapper">
+            <div class="add-note-inline">
+                <input type="text" id="note-input" maxlength="60" placeholder="ما هي ملاحظتك السريعة الآن؟ (60 حرفاً)...">
+                <button id="submit-note-btn" class="btn-primary">نشر</button>
+            </div>
+            <div class="notes-scroller" id="notes-shelf">
+                <!-- الملاحظات الحية تظهر هنا فوق صور الأصدقاء -->
+            </div>
+        </section>
+
+        <!-- بطاقة إنشاء منشور جديد (صور / فيديو / نص) -->
+        <section class="create-post-box">
+            <div class="post-input-row">
+                <img id="create-post-avatar" class="user-avatar" src="https://img.icons8.com/illustrations/style=flat/color=blue/card-user.png" alt="أنت">
+                <textarea id="post-textarea" placeholder="ما الجديد في مشاريعك أو يومك يا هندسة؟..."></textarea>
+            </div>
+            
+            <!-- معاينة الميديا المرفوعة قبل الرفع النهائي (Preview) -->
+            <div id="file-preview-zone" class="preview-zone" style="display: none;">
+                <button id="cancel-preview-btn" class="close-preview">&times;</button>
+                <div id="preview-render-mount"></div>
+            </div>
+            
+            <div class="post-actions-row">
+                <label for="file-upload-input" class="upload-label">📷 صورة / فيديو</label>
+                <input type="file" id="file-upload-input" accept="image/*,video/*" style="display: none;">
+                <button id="publish-post-btn" class="btn-primary">نشر المنشور</button>
+            </div>
+        </section>
+
+        <!-- تايملاين عرض المنشورات الفوري (Feed) -->
+        <section id="app-timeline-feed">
+            <!-- لودر التحميل المؤقت الاحترافي (Shimmer Effect) -->
+            <div class="shimmer-card">
+                <div class="shimmer-line line-short"></div>
+                <div class="shimmer-line line-long"></div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- صفيحة التعليقات السفلية الديناميكية (Comments Bottom Sheet) -->
+    <div id="comments-backdrop" class="backdrop"></div>
+    <div id="comments-sheet" class="bottom-sheet">
+        <div class="sheet-header">
+            <div class="drag-handle"></div>
+            <h3 id="comments-title">التعليقات (0)</h3>
+            <span id="close-sheet-btn" class="close-sheet">&times;</span>
+        </div>
+        <div id="comments-list-container" class="sheet-body"></div>
+        <div class="sheet-footer">
+            <input type="text" id="new-comment-input" placeholder="اكتب تعليقاً مفيداً الآن...">
+            <button id="send-comment-btn" class="btn-primary">إرسال</button>
+        </div>
+    </div>
+
+    <!-- شريط التنقل السفلي الثابت (Navigation Bar) -->
+    <nav class="bottom-nav">
+        <a href="index.html" class="nav-item active"><span>🏠</span><p>الرئيسية</p></a>
+        <a href="profile.html" id="explore-nav-link" class="nav-item"><span>🔍</span><p>الاستكشاف</p></a>
+        <a href="chat.html" class="nav-item"><span>💬</span><p>الرسائل</p></a>
+        <a href="#" id="profile-nav-link" class="nav-item"><span>👤</span><p>الملف</p></a>
+    </nav>
+
+    <!-- استدعاء ملف الـ JS ومحرك المزامنة الحديث بنظام الـ Modules -->
+    <script type="module" src="app.js"></script>
+</body>
+</html>
