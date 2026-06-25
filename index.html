@@ -1,3 +1,38 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Friends Social Network | المخطط المتكامل الكامل</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
+
+    <style>
+        /* =========================================
+           1. نظام الألوان والمتغيرات الديناميكية (Themes)
+           ========================================= */
+        :root {
+            --bg-main: #f0f2f5;
+            --bg-card: #ffffff;
+            --bg-input: #f0f2f5;
+            --bg-button-hover: #e4e6eb;
+            --text-main: #1c1e21;
+            --text-secondary: #65676b;
+            --text-muted: #8a8d91;
+            --border-color: #ccd0d5;
+            --accent-brand: #1877f2;
+            --accent-brand-light: #e7f3ff;
+            --color-danger: #ff3b30;
+            --color-success: #4cd964;
+            --shadow-subtle: 0 1px 2px rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.15);
+            --shadow-lg: 0 12px 28px rgba(0, 0, 0, 0.2);
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-round: 50%;
             --transition-smooth: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
             --safe-top: env(safe-area-inset-top, 0px);
             --safe-bottom: env(safe-area-inset-bottom, 0px);
@@ -1091,7 +1126,7 @@
             animation: zoomIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        @annotation zoomIn {
+        @keyframes zoomIn {
             from { transform: scale(0.9); opacity: 0; }
             to { transform: scale(1); opacity: 1; }
         }
@@ -1122,7 +1157,10 @@
 </head>
 <body>
 
-    <div id="application-auth-overlay" class="auth-overlay-screen" style="display: none;">
+    <!-- ========================================= -->
+    <!-- شاشة المصادقة (Login / Register)          -->
+    <!-- ========================================= -->
+    <div id="application-auth-overlay" class="auth-overlay-screen">
         <div class="auth-box-card">
             <h1 style="color: var(--accent-brand); font-weight: 900; margin-bottom: 6px; font-size: 28px;">Friends</h1>
             <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 24px;">سجل دخولك للتواصل الفوري مع الأصدقاء</p>
@@ -1132,15 +1170,17 @@
                 <div id="tab-register-btn" class="auth-tab-btn" onclick="toggleAuthFormsUX('register')">إنشاء حساب جديد</div>
             </div>
 
-            <form id="app-login-form-node" class="auth-inputs-form" onsubmit="executeCloudAuthSubmit(event, 'login')">
-                <input type="email" id="auth-login-email" placeholder="البريد الإلكتروني" required>
+            <!-- نموذج تسجيل الدخول اليدوي -->
+            <div id="app-login-form-node" class="auth-inputs-form">
+                <input type="text" id="auth-login-username" placeholder="اسم المستخدم" required>
                 <input type="password" id="auth-login-password" placeholder="كلمة المرور" required>
-                <button type="submit" class="btn-action-primary" style="padding: 14px; border-radius: var(--radius-md);">دخول المنصة</button>
-            </form>
+                <button onclick="manualLogin()" class="btn-action-primary" style="padding: 14px; border-radius: var(--radius-md);">دخول المنصة</button>
+            </div>
 
-            <form id="app-register-form-node" class="auth-inputs-form" style="display: none;" onsubmit="executeCloudAuthSubmit(event, 'register')">
-                <input type="text" id="auth-reg-username" placeholder="اسم المستخدم (Username بدون فواصل)" required>
-                <input type="email" id="auth-reg-email" placeholder="البريد الإلكتروني المعتمد" required>
+            <!-- نموذج إنشاء حساب جديد -->
+            <form id="app-register-form-node" class="auth-inputs-form" style="display: none;" onsubmit="manualRegister(event)">
+                <input type="text" id="auth-reg-username" placeholder="اسم المستخدم (بدون فواصل)" required>
+                <input type="email" id="auth-reg-email" placeholder="البريد الإلكتروني" required>
                 <input type="password" id="auth-reg-password" placeholder="كلمة المرور (6 أحرف أو أكثر)" required>
                 <button type="submit" class="btn-action-primary" style="padding: 14px; border-radius: var(--radius-md);">تأكيد وإنشاء الحساب</button>
             </form>
@@ -1243,6 +1283,9 @@
     </div>
 
     <script>
+        // =============================================
+        // 1. إعدادات Firebase (بدون Auth)
+        // =============================================
         const firebaseConfig = {
             apiKey: "AIzaSyA5SS9zdzj5N8oBMmjPgWvfSohdSBIRQ8c",
             authDomain: "friends7777.firebaseapp.com",
@@ -1257,17 +1300,102 @@
         }
         const db = firebase.firestore();
         const storage = firebase.storage();
-        const auth = firebase.auth();
 
-        /* المتغيرات العامة الكلية */
-        let currentUser = ""; 
+        // =============================================
+        // 2. المتغيرات العامة
+        // =============================================
+        let currentUser = localStorage.getItem('logged_user') || "";
         let globalPostsCache = [];
         let globalUsersProfileMap = {};
         let globalFollowingCacheList = [];
         let activeAppTabContext = 'home';
         let stagedFileObjectForUpload = null;
 
-        /* التبديل بين شاشات تسجيل الدخول والإنشاء */
+        // =============================================
+        // 3. وظائف المصادقة اليدوية (بدون Firebase Auth)
+        // =============================================
+
+        // دالة تسجيل الدخول
+        async function manualLogin() {
+            const username = document.getElementById('auth-login-username').value.trim().toLowerCase();
+            const password = document.getElementById('auth-login-password').value;
+            
+            if (!username || !password) {
+                displaySystemToast("الرجاء إدخال اسم المستخدم وكلمة المرور", "danger");
+                return;
+            }
+
+            try {
+                const userDoc = await db.collection("users").doc(username).get();
+                if (userDoc.exists && userDoc.data().password === password) {
+                    currentUser = username;
+                    localStorage.setItem('logged_user', username);
+                    document.getElementById('application-auth-overlay').style.display = "none";
+                    displaySystemToast("🔓 تم تسجيل الدخول بنجاح", "success");
+                    await performApplicationDataBootstrap();
+                } else {
+                    displaySystemToast("اسم المستخدم أو كلمة المرور خطأ!", "danger");
+                }
+            } catch (error) {
+                console.error(error);
+                displaySystemToast("حدث خطأ أثناء تسجيل الدخول", "danger");
+            }
+        }
+
+        // دالة إنشاء حساب جديد
+        async function manualRegister(event) {
+            event.preventDefault();
+            
+            const username = document.getElementById('auth-reg-username').value.trim().toLowerCase().replace(/\s+/g, '');
+            const email = document.getElementById('auth-reg-email').value.trim();
+            const password = document.getElementById('auth-reg-password').value;
+
+            if (!username || !email || !password) {
+                displaySystemToast("الرجاء ملء جميع الحقول", "danger");
+                return;
+            }
+
+            if (password.length < 6) {
+                displaySystemToast("يجب أن تكون كلمة المرور 6 أحرف فأكثر", "danger");
+                return;
+            }
+
+            try {
+                const userQuery = await db.collection("users").doc(username).get();
+                if (userQuery.exists) {
+                    displaySystemToast("اسم المستخدم هذا محجوز بالفعل!", "danger");
+                    return;
+                }
+
+                await db.collection("users").doc(username).set({
+                    username: username,
+                    email: email,
+                    password: password,
+                    avatar: "https://img.icons8.com/illustrations/style=flat/color=blue/card-user.png",
+                    bio: "عضو جديد في شبكة Friends"
+                });
+
+                // تسجيل الدخول تلقائياً
+                currentUser = username;
+                localStorage.setItem('logged_user', username);
+                document.getElementById('application-auth-overlay').style.display = "none";
+                displaySystemToast("✨ تم إنشاء الحساب بنجاح", "success");
+                await performApplicationDataBootstrap();
+            } catch (err) {
+                console.error(err);
+                displaySystemToast("فشل إنشاء الحساب", "danger");
+            }
+        }
+
+        // دالة تسجيل الخروج
+        function logout() {
+            localStorage.removeItem('logged_user');
+            currentUser = "";
+            document.getElementById('application-auth-overlay').style.display = "flex";
+            displaySystemToast("🚪 تم تسجيل الخروج", "info");
+        }
+
+        // التبديل بين شاشات تسجيل الدخول والإنشاء
         function toggleAuthFormsUX(mode) {
             const loginForm = document.getElementById('app-login-form-node');
             const registerForm = document.getElementById('app-register-form-node');
@@ -1275,82 +1403,38 @@
             const registerTab = document.getElementById('tab-register-btn');
 
             if (mode === 'login') {
-                loginForm.style.display = 'flex'; registerForm.style.display = 'none';
-                loginTab.classList.add('active-tab'); registerTab.classList.remove('active-tab');
+                loginForm.style.display = 'flex'; 
+                registerForm.style.display = 'none';
+                loginTab.classList.add('active-tab'); 
+                registerTab.classList.remove('active-tab');
             } else {
-                loginForm.style.display = 'none'; registerForm.style.display = 'flex';
-                loginTab.classList.remove('active-tab'); registerTab.classList.add('active-tab');
+                loginForm.style.display = 'none'; 
+                registerForm.style.display = 'flex';
+                loginTab.classList.remove('active-tab'); 
+                registerTab.classList.add('active-tab');
             }
         }
 
-        /* فحص جلسة الدخول السحابية الإجبارية */
+        // =============================================
+        // 4. فحص حالة المستخدم عند تحميل الصفحة
+        // =============================================
         window.addEventListener('DOMContentLoaded', () => {
             initializeApplicationThemeContext();
             bindStaticInteractiveEventListeners();
 
-            auth.onAuthStateChanged(async (user) => {
-                const authOverlay = document.getElementById('application-auth-overlay');
-                if (user) {
-                    authOverlay.style.display = "none";
-                    // سحب الـ Username الحقيقي المربوط بالـ UID من الفايرستور
-                    const userDoc = await db.collection("users").where("email", "==", user.email).get();
-                    if (!userDoc.empty) {
-                        currentUser = userDoc.docs[0].data().username;
-                    } else {
-                        currentUser = user.email.split('@')[0];
-                    }
-                    localStorage.setItem('logged_user', currentUser);
-                    await performApplicationDataBootstrap();
-                } else {
-                    authOverlay.style.display = "flex";
-                }
-            });
+            const authOverlay = document.getElementById('application-auth-overlay');
+            
+            if (currentUser) {
+                authOverlay.style.display = "none";
+                performApplicationDataBootstrap();
+            } else {
+                authOverlay.style.display = "flex";
+            }
         });
 
-        /* تنفيذ عمليات الدخول والإنشاء عبر السحابة الحقيقية */
-        async function executeCloudAuthSubmit(event, mode) {
-            event.preventDefault();
-            displaySystemToast("جاري معالجة طلبك الأمني...", "upload");
-
-            if (mode === 'login') {
-                const email = document.getElementById('auth-login-email').value.trim();
-                const pass = document.getElementById('auth-login-password').value;
-                try {
-                    await auth.signInWithEmailAndPassword(email, pass);
-                    displaySystemToast("🔓 تم تسجيل الدخول بنجاح", "success");
-                } catch (err) {
-                    displaySystemToast("خطأ: البريد أو كلمة المرور غير صحيحة", "danger");
-                }
-            } else {
-                const username = document.getElementById('auth-reg-username').value.trim().toLowerCase().replace(/\s+/g, '');
-                const email = document.getElementById('auth-reg-email').value.trim();
-                const pass = document.getElementById('auth-reg-password').value;
-
-                if (pass.length < 6) {
-                    displaySystemToast("يجب أن تكون كلمة المرور 6 أحرف فأكثر", "danger");
-                    return;
-                }
-
-                try {
-                    const userQuery = await db.collection("users").doc(username).get();
-                    if (userQuery.exists) {
-                        displaySystemToast("اسم المستخدم هذا محجوز بالفعل!", "danger");
-                        return;
-                    }
-
-                    await auth.createUserWithEmailAndPassword(email, pass);
-                    await db.collection("users").doc(username).set({
-                        username: username,
-                        email: email,
-                        avatar: "https://img.icons8.com/illustrations/style=flat/color=blue/card-user.png",
-                        bio: "عضو جديد في شبكة Friends"
-                    });
-                    displaySystemToast("✨ تم إنشاء الحساب بنجاح", "success");
-                } catch (err) {
-                    displaySystemToast("فشل التسجيل: البريد مستخدم أو غير صالح", "danger");
-                }
-            }
-        }
+        // =============================================
+        // 5. الوظائف الأساسية للتطبيق
+        // =============================================
 
         function initializeApplicationThemeContext() {
             const savedTheme = localStorage.getItem('theme') || 'light';
@@ -1408,19 +1492,21 @@
             window.location.href = `profile.html?user=${encodeURIComponent(targetUsername.trim())}`;
         }
 
+        // =============================================
+        // 6. ربط الأحداث الثابتة
+        // =============================================
         function bindStaticInteractiveEventListeners() {
             document.getElementById('app-theme-switcher-btn').addEventListener('click', toggleApplicationThemeUX);
             document.getElementById('header-profile-avatar-node').addEventListener('click', () => routeToUserProfileQuery(currentUser));
-            document.getElementById('app-logout-trigger-btn').addEventListener('click', () => {
-                auth.signOut();
-                displaySystemToast("🚪 تم تسجيل الخروج بنجاح", "info");
-            });
+            document.getElementById('app-logout-trigger-btn').addEventListener('click', logout);
             
             document.getElementById('nav-tab-home-trigger').addEventListener('click', () => executeTabSwitchingLogic('home'));
             document.getElementById('nav-tab-explore-trigger').addEventListener('click', () => executeTabSwitchingLogic('explore'));
             document.getElementById('nav-tab-reels-trigger').addEventListener('click', () => executeTabSwitchingLogic('reels'));
             
-            document.getElementById('nav-tab-chat-trigger').addEventListener('click', () => { window.location.href = 'chat.html'; });
+            document.getElementById('nav-tab-chat-trigger').addEventListener('click', () => { 
+                alert('📱 صفحة المحادثات قيد التطوير');
+            });
             document.getElementById('nav-tab-profile-trigger').addEventListener('click', () => routeToUserProfileQuery(currentUser));
             
             document.getElementById('app-content-search-field').addEventListener('input', executeRealtimeContentSearchFilter);
@@ -1436,6 +1522,9 @@
             });
         }
 
+        // =============================================
+        // 7. تحميل البيانات الأساسية
+        // =============================================
         async function performApplicationDataBootstrap() {
             try {
                 const usersCollectionSnapshot = await db.collection("users").get();
@@ -1466,6 +1555,9 @@
             }
         }
 
+        // =============================================
+        // 8. وظائف التبديل بين التبويبات
+        // =============================================
         function executeTabSwitchingLogic(targetTabName) {
             activeAppTabContext = targetTabName;
             document.querySelectorAll('.bottom-nav-item').forEach(navNode => navNode.classList.remove('active'));
@@ -1518,6 +1610,9 @@
             renderTimelinePostsFeed(filteredResults);
         }
 
+        // =============================================
+        // 9. الملاحظات السريعة (Notes)
+        // =============================================
         async function synchronizeInlineNotesWithCloud() {
             const notesScrollContainer = document.getElementById('notes-wall-mount-point');
             if (!notesScrollContainer) return;
@@ -1573,6 +1668,9 @@
             }
         }
 
+        // =============================================
+        // 10. المنشورات (Posts)
+        // =============================================
         async function synchronizePostsFeedWithCloud() {
             try {
                 const postsSnapshot = await db.collection("posts").get();
@@ -1658,6 +1756,9 @@
             });
         }
 
+        // =============================================
+        // 11. الريلز (Reels)
+        // =============================================
         function renderIsolatedReelsStream() {
             const reelsContainerMount = document.getElementById('reels-isolated-stream-mount');
             if (!reelsContainerMount) return;
@@ -1695,6 +1796,9 @@
             });
         }
 
+        // =============================================
+        // 12. وظائف التفاعل (Like - Follow - Comments)
+        // =============================================
         async function openInlinePostContentEditor(postId, currentTextContent) {
             const revisedPostContentText = prompt("تعديل محتوى منشورك:", currentTextContent);
             if (revisedPostContentText !== null) {
@@ -1738,6 +1842,9 @@
             } catch (err) { console.error(err); }
         }
 
+        // =============================================
+        // 13. رفع الميديا (Media Upload)
+        // =============================================
         function triggerGlobalMediaLightboxDisplay(mediaSourceUrl) {
             const lightboxFrame = document.getElementById('global-media-lightbox');
             const mountPoint = document.getElementById('lightbox-mount-point');
@@ -1814,6 +1921,9 @@
             finally { publishButtonNode.disabled = false; }
         }
 
+        // =============================================
+        // 14. التعليقات (Comments)
+        // =============================================
         function openCommentsBottomSheetComponent(postId, commentsArrayData, isPostOwner) {
             document.getElementById('comments-modal-backdrop').classList.add('backdrop-state-visible');
             document.getElementById('global-comments-sheet-container').classList.add('sheet-state-open');
