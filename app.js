@@ -1,20 +1,12 @@
 /* ==========================================================================
-   Friends Production Engine - Firebase v10 Real-time Integration
+   Friends Core Production Engine - 2026 Edition (Full Stack Hybrid)
    ========================================================================== */
 
-// 1. استدعاء مكتبات الفايربيز الأساسية بنظام الـ Modules (v10)
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { 
-    getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, 
-    GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, sendPasswordResetEmail
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { 
-    getFirestore, doc, setDoc, getDoc, collection, addDoc, query, orderBy, 
-    onSnapshot, updateDoc, arrayUnion, arrayRemove, increment, where
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { getFirestore, doc, setDoc, getDoc, collection, addDoc, query, orderBy, onSnapshot, updateDoc, arrayUnion, arrayRemove, increment, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-// 2. إعدادات الفايربيز الخاصة بك (ضع بيانات مشروعك هنا ليعمل النظام فوراً)
+// 1. إعدادات الفايربيز (ضع مفاتيحك هنا لتشغيل السحابة العالمية)
 const firebaseConfig = {
     apiKey: "YOUR_API_KEY",
     authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
@@ -24,297 +16,316 @@ const firebaseConfig = {
     appId: "YOUR_APP_ID"
 };
 
-// تهيئة الفايربيز
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-const storage = getStorage(app);
-const googleProvider = new GoogleAuthProvider();
-
-// 3. متغيرات الحالة العامة للتطبيق (State Management)
-let currentUserData = null;
-let activeChatUserId = null;
-let unsubscribeChat = null;
-
-// الصورة الافتراضية الرسمية (طابع انستغرام للحسابات التي بدون صورة)
-const DEFAULT_AVATAR = "https://www.instagram.com/static/images/anonymousUser.jpg/73e970b629f6.jpg";
-
-// تشغيل التطبيق بمجرد فحص حالة تسجيل الدخول للعميل
-onAuthStateChanged(auth, async (user) => {
-    if (user) {
-        // جلب بيانات المستخدم المسجل من الفاير ستور
-        const userDoc = await getDoc(doc(db, "users", user.uid));
-        if (userDoc.exists()) {
-            currentUserData = userDoc.data();
-        } else {
-            // لو مستخدم جديد سجل بجوجل مثلاً ولم تنشأ له بيانات بعد
-            currentUserData = {
-                uid: user.uid,
-                name: user.displayName || "مطور جديد",
-                email: user.email,
-                avatar: user.photoURL || DEFAULT_AVATAR,
-                bio: "مرحباً بك في منصتي الافتراضية!",
-                followers: [],
-                following: [],
-                savedPosts: []
-            };
-            await setDoc(doc(db, "users", user.uid), currentUserData);
-        }
-        
-        // تحديث واجهة المستخدم بالبيانات الحقيقية
-        updateUIWithUserData();
-        listenToFeed();
-        listenToNotes();
-        listenToNotifications();
-        setupSearch();
-    } else {
-        // إذا كان المستخدم غير مسجل، يمكنك توجيهه لصفحة تسجيل الدخول أو إظهار نافذة التسجيل
-        console.log("المستخدم غير مسجل دخول حالياً.");
-        showToast("⚠️ يرجى تسجيل الدخول للوصول لكامل الميزات", "error");
+// 2. تهيئة وتأمين النظام ضد الانهيار
+let auth = null, db = null, isFirebaseReady = false;
+try {
+    if (firebaseConfig.apiKey && firebaseConfig.apiKey !== "YOUR_API_KEY") {
+        const app = initializeApp(firebaseConfig);
+        auth = getAuth(app);
+        db = getFirestore(app);
+        isFirebaseReady = true;
     }
-});
-
-// 4. دالة تحديث عناصر الواجهة الثابتة ببيانات المستخدم الحقيقي
-function updateUIWithUserData() {
-    const headerAvatar = document.getElementById("user-header-avatar");
-    const createPostAvatar = document.getElementById("create-post-avatar");
-    
-    if (headerAvatar) headerAvatar.src = currentUserData.avatar || DEFAULT_AVATAR;
-    if (createPostAvatar) createPostAvatar.src = currentUserData.avatar || DEFAULT_AVATAR;
+} catch (error) {
+    console.warn("Firebase config missing. Running on Hybrid LocalEngine mode.");
 }
 
-// 5. محرك التايملاين الحي والمباشر (Real-time Timeline Feed)
-function listenToFeed() {
-    const feedContainer = document.getElementById("app-timeline-feed");
-    if (!feedContainer) return;
+// 3. إدارة الحالة العامة للمنصة (State Management)
+let appUser = null;
+const DEFAULT_AVATAR = "https://www.instagram.com/static/images/anonymousUser.jpg/73e970b629f6.jpg";
 
-    const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
-    
-    // مراقبة حية ومباشرة بدون عمل Refresh للمتصفح
-    onSnapshot(q, (snapshot) => {
-        if (snapshot.empty) {
-            feedContainer.innerHTML = `<p style="text-align:center; color:var(--text-secondary); padding:30px;">لا يوجد منشورات حالياً، شاركنا أول منشور حقيقي!</p>`;
+// محاكاة قاعدة البيانات المحلية النظيفة (حتى لا تنهار المنصة في غياب السحابة)
+if (!localStorage.getItem("local_posts")) localStorage.setItem("local_posts", JSON.stringify([]));
+if (!localStorage.getItem("local_users")) localStorage.setItem("local_users", JSON.stringify([]));
+
+// 4. فحص حالة الولوج المركزية عند إقلاع التطبيق
+document.addEventListener("DOMContentLoaded", () => {
+    initAppEngine();
+});
+
+function initAppEngine() {
+    if (isFirebaseReady) {
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                const userDoc = await getDoc(doc(db, "users", user.uid));
+                if (userDoc.exists()) {
+                    appUser = userDoc.data();
+                } else {
+                    appUser = { uid: user.uid, name: user.displayName || "مطور جديد", email: user.email, avatar: user.photoURL || DEFAULT_AVATAR, bio: "مرحباً بك في عالمي!", savedPosts: [] };
+                    await setDoc(doc(db, "users", user.uid), appUser);
+                }
+                hideAuthOverlay();
+                startLiveFeed();
+            } else {
+                showAuthOverlay();
+            }
+        });
+    } else {
+        // إدارة الجلسة المحلية الفورية (الوضع التجريبي الذكي المتكامل)
+        const session = sessionStorage.getItem("local_session");
+        if (session) {
+            appUser = JSON.stringify(session);
+            hideAuthOverlay();
+            startLiveFeed();
+        } else {
+            showAuthOverlay();
+        }
+    }
+    setupSearchEngine();
+    setupInterfaceActions();
+}
+
+// 5. نظام شاشة الحسابات والتحكم بالتبويبات والـ Authentication
+window.handleEmailAuth = async function(event, mode) {
+    event.preventDefault();
+    showToast("جاري معالجة الطلب...", "info");
+
+    if (mode === 'login') {
+        const email = document.getElementById("login-email").value.trim();
+        const pass = document.getElementById("login-password").value;
+
+        if (isFirebaseReady) {
+            try {
+                await signInWithEmailAndPassword(auth, email, pass);
+                showToast("تم تسجيل الدخول بنجاح!");
+            } catch (err) {
+                showToast("خطأ: البريد أو كلمة المرور غير صحيحة", "error");
+            }
+        } else {
+            // محاكاة تسجيل الدخول محلياً
+            const users = JSON.parse(localStorage.getItem("local_users"));
+            const match = users.find(u => u.email === email && u.pass === pass);
+            if (match) {
+                appUser = { uid: match.uid, name: match.name, email: match.email, avatar: DEFAULT_AVATAR, bio: match.bio || "مرحباً بك!" };
+                sessionStorage.setItem("local_session", JSON.stringify(appUser));
+                hideAuthOverlay();
+                startLiveFeed();
+                showToast("تم الدخول للوضع المحلي التجريبي بنجاح!");
+            } else {
+                showToast("المستخدم غير موجود محلياً! قم بإنشاء حساب أولاً.", "error");
+            }
+        }
+    } else if (mode === 'register') {
+        const name = document.getElementById("reg-name").value.trim();
+        const email = document.getElementById("reg-email").value.trim();
+        const pass = document.getElementById("reg-password").value;
+
+        if (pass.length < 6) {
+            showToast("يجب أن تكون كلمة المرور 6 أحرف فأكثر", "error");
             return;
         }
 
-        feedContainer.innerHTML = snapshot.docs.map(docSnap => {
-            const post = docSnap.data();
-            const postId = docSnap.id;
-            const isLiked = post.likedBy && post.likedBy.includes(auth.currentUser.uid);
-            const isSaved = currentUserData.savedPosts && currentUserData.savedPosts.includes(postId);
-            
-            // تحويل النص لمعالجة الهاشتاجات تلقائياً
-            const formattedText = post.text.replace(/#(\w+)/g, '<span class="hashtag">#$1</span>');
-
-            let mediaHtml = "";
-            if (post.mediaUrl) {
-                if (post.mediaType === "video") {
-                    mediaHtml = `<div class="post-media-attachment"><video src="${post.mediaUrl}" controls></video></div>`;
-                } else {
-                    mediaHtml = `<div class="post-media-attachment"><img src="${post.mediaUrl}" class="lightbox-trigger" alt="مرفق"></div>`;
-                }
+        if (isFirebaseReady) {
+            try {
+                const cred = await createUserWithEmailAndPassword(auth, email, pass);
+                appUser = { uid: cred.user.uid, name: name, email: email, avatar: DEFAULT_AVATAR, bio: "حساب جديد موثق" };
+                await setDoc(doc(db, "users", cred.user.uid), appUser);
+                showToast("تم إنشاء حسابك السحابي بنجاح!");
+            } catch (err) {
+                showToast("خطأ البريد مستخدم بالفعل أو غير صالح", "error");
             }
+        } else {
+            // محاكاة إنشاء حساب محلياً
+            const users = JSON.parse(localStorage.getItem("local_users"));
+            if (users.some(u => u.email === email)) {
+                showToast("هذا البريد مسجل محلياً بالفعل!", "error");
+                return;
+            }
+            const newUid = "local_" + Date.now();
+            const newUser = { uid: newUid, name: name, email: email, pass: pass, avatar: DEFAULT_AVATAR, bio: "مطور طموح" };
+            users.push(newUser);
+            localStorage.setItem("local_users", JSON.stringify(users));
+            appUser = newUser;
+            sessionStorage.setItem("local_session", JSON.stringify(appUser));
+            hideAuthOverlay();
+            startLiveFeed();
+            showToast("تم إنشاء الحساب المحلي بنجاح! جرب النشر الآن.");
+        }
+    }
+};
 
-            return `
-                <div class="feed-card" data-id="${postId}">
-                    <div class="card-header">
-                        <div class="card-user-info">
-                            <img class="user-avatar" src="${post.authorAvatar || DEFAULT_AVATAR}" alt="Avatar" onclick="window.location.href='profile.html?uid=${post.authorId}'">
-                            <div class="post-meta">
-                                <h4 onclick="window.location.href='profile.html?uid=${post.authorId}'">${post.authorName}</h4>
-                                <span>${post.createdAt ? new Date(post.createdAt.toDate()).toLocaleDateString('ar-EG') : 'الآن'}</span>
-                            </div>
-                        </div>
-                        ${post.authorId !== auth.currentUser.uid ? `<button class="follow-btn-inline" onclick="toggleFollow('${post.authorId}')">متابعة</button>` : ''}
-                    </div>
-                    <p class="post-body-text">${formattedText}</p>
-                    ${mediaHtml}
-                    <div class="card-actions-bar">
-                        <button class="action-btn like-btn ${isLiked ? 'liked' : ''}" onclick="toggleLike('${postId}', ${isLiked})">
-                            ❤️ <span>${post.likesCount || 0}</span> تفاعل
-                        </button>
-                        <button class="action-btn open-comments-btn" onclick="openComments('${postId}')">
-                            💬 <span>${post.commentsCount || 0}</span> التعليقات
-                        </button>
-                        <button class="action-btn save-btn ${isSaved ? 'saved' : ''}" onclick="toggleSavePost('${postId}', ${isSaved})">
-                            🔖 حفظ المنشور
-                        </button>
-                    </div>
-                </div>
-            `;
-        }).join('');
-    });
+// استرجاع كلمة المرور
+window.handleResetPassword = async function() {
+    const email = prompt("أدخل بريدك الإلكتروني لإرسال رابط إعادة التعيين:");
+    if (!email) return;
+
+    if (isFirebaseReady) {
+        try {
+            await sendPasswordResetEmail(auth, email);
+            showToast("تم إرسال رابط استعادة المرور لبريدك.");
+        } catch (e) {
+            showToast("تعذر إرسال الرابط، تأكد من البريد", "error");
+        }
+    } else {
+        showToast("تنبيه: ميزة البريد تتطلب ربط مفاتيح Firebase الحقيقية أونلاين.", "error");
+    }
+};
+
+// 6. محرك التايملاين وبث المنشورات الفوري (Live Timeline Engine)
+function startLiveFeed() {
+    const feed = document.getElementById("app-timeline-feed");
+    if (!feed) return;
+
+    if (isFirebaseReady) {
+        const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
+        onSnapshot(q, (snapshot) => {
+            renderTimelineCards(snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
+        });
+    } else {
+        // تحديث محلي دوري يحاكي الـ Live Feed
+        const renderLocal = () => {
+            const posts = JSON.parse(localStorage.getItem("local_posts")) || [];
+            renderTimelineCards(posts.sort((a,b) => b.createdAt - a.createdAt));
+        };
+        renderLocal();
+        window.refreshLocalTimeline = renderLocal; // إتاحة التحديث الفوري عند النشر
+    }
 }
 
-// 6. ميزة إنشاء ونشر بوست حقيقي مع الميديا والهاشتاجات والرفع للـ Storage
-window.publishPost = async function() {
-    const textarea = document.getElementById("post-textarea");
-    const fileInput = document.getElementById("file-upload-input");
-    const text = textarea.value.trim();
-    
-    if (!text && !fileInput.files[0]) {
-        showToast("⚠️ اكتب نصاً أو ارفق ملفاً لنشره", "error");
+function renderTimelineCards(postsArray) {
+    const feed = document.getElementById("app-timeline-feed");
+    if (postsArray.length === 0) {
+        feed.innerHTML = `<p style="text-align:center; color:var(--text-secondary); padding:40px; font-size:13px;">التايملاين نظيف ومصفّر بالكامل، شاركنا منشورك الأول الآن يا هندسة! 🚀</p>`;
         return;
     }
 
-    showToast("⏳ جاري نشر مشاركتك الفخمة...", "info");
-    let mediaUrl = null;
-    let mediaType = "image";
+    feed.innerHTML = postsArray.map(post => {
+        const hasLiked = post.likedBy && post.likedBy.includes(appUser?.uid);
+        const textWithHashtags = post.text.replace(/#(\w+)/g, '<span class="hashtag" style="color:var(--accent-color); font-weight:700; cursor:pointer;" onclick="filterByTag(\'$1\')">#$1</span>');
+        
+        return `
+            <div class="feed-card" style="background:var(--bg-surface); border:1px solid var(--border-color); border-radius:var(--radius-lg); padding:16px; margin-bottom:16px;">
+                <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                    <div class="card-user-info" style="display:flex; align-items:center; gap:10px; cursor:pointer;" onclick="window.location.href='profile.html?uid=${post.authorId}'">
+                        <img class="user-avatar" src="${post.authorAvatar || DEFAULT_AVATAR}" style="width:40px; height:40px; border-radius:50%; object-fit:cover;">
+                        <div class="post-meta">
+                            <h4 style="font-size:14px; font-weight:700;">${post.authorName}</h4>
+                            <span style="font-size:11px; color:var(--text-secondary);">منذ فترة وجيزة</span>
+                        </div>
+                    </div>
+                </div>
+                <p class="post-body-text" style="font-size:14px; margin-bottom:12px; white-space:pre-wrap;">${textWithHashtags}</p>
+                <div class="card-actions-bar" style="display:flex; gap:20px; border-top:1px solid var(--border-color); padding-top:10px;">
+                    <button class="action-btn" style="background:none; border:none; cursor:pointer; color:${hasLiked ? 'var(--error-color)' : 'var(--text-secondary)'}" onclick="likePostEngine('${post.id}')">
+                        ❤️ <span>${post.likesCount || 0}</span> تفاعل
+                    </button>
+                    <button class="action-btn" style="background:none; border:none; color:var(--text-secondary);">💬 التعليقات</button>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
 
-    if (fileInput.files[0]) {
-        const file = fileInput.files[0];
-        mediaType = file.type.startsWith("video/") ? "video" : "image";
-        const storageRef = ref(storage, `posts/${Date.now()}_${file.name}`);
-        const uploadSnap = await uploadBytes(storageRef, file);
-        mediaUrl = await getDownloadURL(uploadSnap.ref);
+// 7. ميزة إنشاء ونشر مشاركة جديدة
+window.publishPost = async function() {
+    const textarea = document.getElementById("post-textarea");
+    const text = textarea.value.trim();
+
+    if (!text) {
+        showToast("يرجى كتابة نص المنشور أولاً!", "error");
+        return;
     }
 
-    // استخراج الهاشتاجات وحفظها في مصفوفة مستقلة للبحث المتقدم لاحقاً
-    const hashtags = text.match(/#(\w+)/g) || [];
-
-    await addDoc(collection(db, "posts"), {
+    const newPost = {
         text: text,
-        mediaUrl: mediaUrl,
-        mediaType: mediaType,
-        hashtags: hashtags,
-        authorId: auth.currentUser.uid,
-        authorName: currentUserData.name,
-        authorAvatar: currentUserData.avatar,
+        authorId: appUser.uid,
+        authorName: appUser.name,
+        authorAvatar: appUser.avatar || DEFAULT_AVATAR,
         likesCount: 0,
         likedBy: [],
-        commentsCount: 0,
-        createdAt: new Date()
-    });
+        createdAt: isFirebaseReady ? new Date() : Date.now()
+    };
+
+    if (isFirebaseReady) {
+        await addDoc(collection(db, "posts"), newPost);
+    } else {
+        const posts = JSON.parse(localStorage.getItem("local_posts"));
+        newPost.id = "post_" + Date.now();
+        posts.push(newPost);
+        localStorage.setItem("local_posts", JSON.stringify(posts));
+        if (window.refreshLocalTimeline) window.refreshLocalTimeline();
+    }
 
     textarea.value = "";
-    fileInput.value = "";
-    document.getElementById("file-preview-zone").style.display = "none";
-    showToast("✅ تم النشر في التايملاين بنجاح!");
+    showToast("تم نشر مشاركتك بنجاح!");
 };
 
-// 7. ميزة الإعجاب (Like) الحقيقي والذكي
-window.toggleLike = async function(postId, isLiked) {
-    const postRef = doc(db, "posts", postId);
-    const userId = auth.currentUser.uid;
-
-    if (isLiked) {
-        await updateDoc(postRef, {
-            likedBy: arrayRemove(userId),
-            likesCount: increment(-1)
-        });
-    } else {
-        await updateDoc(postRef, {
-            likedBy: arrayUnion(userId),
-            likesCount: increment(1)
-        });
-        // إرسال إشعار لصاحب البوست
+// 8. محرك الإعجابات الهجين (Like Engine)
+window.likePostEngine = async function(postId) {
+    if (!appUser) return;
+    
+    if (isFirebaseReady) {
+        const postRef = doc(db, "posts", postId);
         const postSnap = await getDoc(postRef);
-        if(postSnap.exists() && postSnap.data().authorId !== userId) {
-            sendNotification(postSnap.data().authorId, "إعجاب جديد", `${currentUserData.name} أعجب بمنشورك الحسابي.`);
+        if (postSnap.exists()) {
+            const data = postSnap.data();
+            const liked = data.likedBy && data.likedBy.includes(appUser.uid);
+            await updateDoc(postRef, {
+                likedBy: liked ? arrayRemove(appUser.uid) : arrayUnion(appUser.uid),
+                likesCount: increment(liked ? -1 : 1)
+            });
+        }
+    } else {
+        const posts = JSON.parse(localStorage.getItem("local_posts"));
+        const post = posts.find(p => p.id === postId);
+        if (post) {
+            const idx = post.likedBy.indexOf(appUser.uid);
+            if (idx > -1) {
+                post.likedBy.splice(idx, 1);
+                post.likesCount--;
+            } else {
+                post.likedBy.push(appUser.uid);
+                post.likesCount++;
+            }
+            localStorage.setItem("local_posts", JSON.stringify(posts));
+            if (window.refreshLocalTimeline) window.refreshLocalTimeline();
         }
     }
 };
 
-// 8. نظام البحث المتقدم الذكي (أشخاص / هاشتاجات)
-function setupSearch() {
-    const searchInput = document.getElementById("global-search-input");
-    const resultsBox = document.getElementById("search-results-dropdown");
-    if (!searchInput || !resultsBox) return;
+// 9. محرك البحث والتبديل المرئي للواجهات
+function setupSearchEngine() {
+    const input = document.getElementById("global-search-input");
+    if (!input) return;
 
-    searchInput.addEventListener("input", async (e) => {
-        const term = e.target.value.trim().toLowerCase();
-        if (!term) {
-            resultsBox.style.display = "none";
+    input.addEventListener("input", (e) => {
+        const val = e.target.value.trim().toLowerCase();
+        const posts = JSON.parse(localStorage.getItem("local_posts")) || [];
+        
+        if(!val) {
+            startLiveFeed();
             return;
         }
-
-        // بحث محلي أو جلب سريع من الفاير ستور (مثال للأشخاص والهاشتاجات)
-        resultsBox.style.display = "block";
-        resultsBox.innerHTML = `<p style="padding:10px; font-size:12px; color:var(--text-secondary)">جاري البحث عن "${term}"...</p>`;
         
-        // جلب الأشخاص المتطابقين في الاسم
-        const qUsers = query(collection(db, "users"), where("name", ">=", term), where("name", "<=", term + "\uf8ff"));
-        const snapshot = await getDoc(qUsers); // أو getDocs حسب هيكلية الاستدعاء
-        
-        // رسم النتائج بشكل نظيف (Clean Dropdown)
-        resultsBox.innerHTML = `
-            <div style="padding:10px; font-weight:bold; font-size:12px; border-bottom:1px solid var(--border-color)">النتائج المطابقة</div>
-            <div style="padding:10px; cursor:pointer;" onclick="filterTimelineByHashtag('${term}')">🔍 ابحث عن هاشتاج #${term}</div>
-        `;
+        // تصفية فورية مبنية على الهاشتاجات أو الكلمات الدلالية أو الأسماء
+        const filtered = posts.filter(p => p.text.toLowerCase().includes(val) || p.authorName.toLowerCase().includes(val));
+        renderTimelineCards(filtered);
     });
 }
 
-// 9. محرك الشات والرسائل الفورية (WebSocket-like Real-time Chat)
-window.loadDirectChat = function(targetUserId, targetUserName) {
-    activeChatUserId = targetUserId;
-    document.getElementById("active-chat-name").innerText = targetUserName;
+function setupInterfaceActions() {
+    const btn = document.getElementById("publish-post-btn");
+    if (btn) btn.addEventListener("click", window.publishPost);
     
-    const messagesBox = document.getElementById("chat-messages-box");
-    if (!messagesBox) return;
-
-    if (unsubscribeChat) unsubscribeChat();
-
-    const chatId = [auth.currentUser.uid, targetUserId].sort().join("_");
-    const q = query(collection(db, "chats", chatId, "messages"), orderBy("timestamp", "asc"));
-
-    unsubscribeChat = onSnapshot(q, (snapshot) => {
-        messagesBox.innerHTML = snapshot.docs.map(docSnap => {
-            const msg = docSnap.data();
-            const isOutgoing = msg.senderId === auth.currentUser.uid;
-            return `
-                <div class="msg-bubble ${isOutgoing ? 'outgoing' : 'incoming'}">
-                    ${msg.text}
-                </div>
-            `;
-        }).join('');
-        messagesBox.scrollTop = messagesBox.scrollHeight;
-    });
-};
-
-// 10. إرسال إشعارات حقيقية وحفظها في قاعدة البيانات للمستخدمين
-async function sendNotification(targetUid, title, body) {
-    await addDoc(collection(db, "users", targetUid, "notifications"), {
-        title: title,
-        body: body,
-        read: false,
-        timestamp: new Date()
-    });
+    // إغلاق وتسجيل الخروج التام
+    const logout = document.getElementById("logout-btn");
+    if (logout) {
+        logout.addEventListener("click", () => {
+            if (isFirebaseReady) signOut(auth);
+            sessionStorage.clear();
+            window.location.reload();
+        });
+    }
 }
 
-function listenToNotifications() {
-    const q = query(collection(db, "users", auth.currentUser.uid, "notifications"), where("read", "==", false));
-    onSnapshot(q, (snapshot) => {
-        const badge = document.getElementById("notif-count");
-        if (badge) {
-            if (snapshot.size > 0) {
-                badge.innerText = snapshot.size;
-                badge.style.display = "inline-block";
-            } else {
-                badge.style.display = "none";
-            }
-        }
-    });
-}
+// أدوات الواجهة المساعدة النظيفة
+function showAuthOverlay() { const o = document.getElementById("auth-screen-overlay"); if(o) o.style.display = "flex"; }
+function hideAuthOverlay() { const o = document.getElementById("auth-screen-overlay"); if(o) o.style.display = "none"; }
 
-// 11. نظام التوست المنسق المطور لبث الرسائل والعمليات
-function showToast(message, type = "success") {
+function showToast(msg, type = "success") {
     const toast = document.getElementById("system-toast");
-    const textSpan = document.getElementById("toast-text");
-    const iconSpan = document.getElementById("toast-icon");
-    
-    if (!toast || !textSpan) return;
-    
-    textSpan.innerText = message;
-    if (type === "error") iconSpan.innerText = "⚠️";
-    else if (type === "info") iconSpan.innerText = "⏳";
-    else iconSpan.innerText = "🔔";
-    
+    const txt = document.getElementById("toast-text");
+    if (!toast || !txt) return;
+    txt.innerText = msg;
     toast.classList.add("show");
-    setTimeout(() => { toast.classList.remove("show"); }, 4000);
+    setTimeout(() => toast.classList.remove("show"), 3500);
 }
-
-// تفعيل وتأمين ميزة النشر لزر الواجهة
-document.addEventListener("DOMContentLoaded", () => {
-    const pubBtn = document.getElementById("publish-post-btn");
-    if(pubBtn) pubBtn.addEventListener("click", window.publishPost);
-});
