@@ -1,345 +1,320 @@
 /* ==========================================================================
-   Friends Core Application Engine - 2026 Modern JS
+   Friends Production Engine - Firebase v10 Real-time Integration
    ========================================================================== */
 
-document.addEventListener('DOMContentLoaded', () => {
-    initApp();
-});
+// 1. استدعاء مكتبات الفايربيز الأساسية بنظام الـ Modules (v10)
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { 
+    getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, 
+    GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, sendPasswordResetEmail
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { 
+    getFirestore, doc, setDoc, getDoc, collection, addDoc, query, orderBy, 
+    onSnapshot, updateDoc, arrayUnion, arrayRemove, increment, where
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
-// قاعدة بيانات وهمية مؤقتة (Mock Data) لتشغيل الموقع فوراً وإبهار المستخدمين
-const mockStories = [
-    { id: 1, username: 'أنت', avatar: 'https://img.icons8.com/illustrations/style=flat/color=blue/card-user.png' },
-    { id: 2, username: 'م. أحمد', avatar: 'https://img.icons8.com/illustrations/style=flat/color=blue/businessman.png' },
-    { id: 3, username: 'سارة كريم', avatar: 'https://img.icons8.com/illustrations/style=flat/color=blue/businesswoman.png' },
-    { id: 4, username: 'عمر المختار', avatar: 'https://img.icons8.com/illustrations/style=flat/color=blue/worker.png' }
-];
+// 2. إعدادات الفايربيز الخاصة بك (ضع بيانات مشروعك هنا ليعمل النظام فوراً)
+const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_PROJECT_ID.appspot.com",
+    messagingSenderId: "YOUR_SENDER_ID",
+    appId: "YOUR_APP_ID"
+};
 
-const mockNotes = [
-    { id: 1, username: 'م. أحمد', text: 'متاح للاستشارات البرمجية 💻', avatar: 'https://img.icons8.com/illustrations/style=flat/color=blue/businessman.png' },
-    { id: 2, username: 'سارة كريم', text: 'تصاميم UI جديدة قريباً! ✨', avatar: 'https://img.icons8.com/illustrations/style=flat/color=blue/businesswoman.png' }
-];
+// تهيئة الفايربيز
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const storage = getStorage(app);
+const googleProvider = new GoogleAuthProvider();
 
-let mockPosts = [
-    {
-        id: 101,
-        author: 'م. أحمد',
-        avatar: 'https://img.icons8.com/illustrations/style=flat/color=blue/businessman.png',
-        time: 'منذ ساعتين',
-        text: 'الحمد لله، تم إطلاق الواجهة الجديدة لنظام إدارة المشاريع الذكي! التصميم يعتمد بالكامل على تجربة مستخدم سريعة ودعم تلقائي للوضع الداكن. رأيكم يهمني يا بشمهندسين 🚀',
-        media: 'https://images.unsplash.com/photo-1531403009284-440f080d1e12?auto=format&fit=crop&w=600&q=80',
-        mediaType: 'image',
-        likes: 12,
-        liked: false,
-        comments: [
-            { author: 'سارة كريم', text: 'شغل عالي جداً وتوزيع الألوان مريح للعين.' },
-            { author: 'عمر المختار', text: 'عاش يا هندسة بالتوفيق!' }
-        ]
-    }
-];
+// 3. متغيرات الحالة العامة للتطبيق (State Management)
+let currentUserData = null;
+let activeChatUserId = null;
+let unsubscribeChat = null;
 
-// الدالة الرئيسية لتشغيل التطبيق
-function initApp() {
-    renderStories();
-    renderNotes();
-    renderFeed();
-    setupEventListeners();
-    showToast('✨ أهلاً بك في منصة Friends المحدثة', 'success');
-}
+// الصورة الافتراضية الرسمية (طابع انستغرام للحسابات التي بدون صورة)
+const DEFAULT_AVATAR = "https://www.instagram.com/static/images/anonymousUser.jpg/73e970b629f6.jpg";
 
-// 1. رسم الستوريز في الشريط العلوي
-function renderStories() {
-    const wrapper = document.getElementById('stories-wrapper');
-    if (!wrapper) return;
-    
-    wrapper.innerHTML = mockStories.map(story => `
-        <div class="story-item">
-            <div class="story-avatar-wrapper">
-                <img src="${story.avatar}" alt="${story.username}">
-            </div>
-            <p class="story-username">${story.username}</p>
-        </div>
-    `).join('');
-}
-
-// 2. رسم الملاحظات السريعة
-function renderNotes() {
-    const shelf = document.getElementById('notes-shelf');
-    if (!shelf) return;
-    
-    shelf.innerHTML = mockNotes.map(note => `
-        <div class="note-bubble-item">
-            <div class="note-text-cloud">${note.text}</div>
-            <img class="note-avatar" src="${note.avatar}" alt="${note.username}">
-        </div>
-    `).join('');
-}
-
-// 3. رسم تايملاين البوستات
-function renderFeed() {
-    const feedContainer = document.getElementById('app-timeline-feed');
-    if (!feedContainer) return;
-    
-    if (mockPosts.length === 0) {
-        feedContainer.innerHTML = `<p style="text-align:center; color:var(--text-secondary); padding:20px;">لا يوجد منشورات حالياً، كن أول من ينشر!</p>`;
-        return;
-    }
-    
-    feedContainer.innerHTML = mockPosts.map(post => {
-        let mediaHtml = '';
-        if (post.media) {
-            if (post.mediaType === 'video') {
-                mediaHtml = `<div class="post-media-attachment"><video src="${post.media}" controls></video></div>`;
-            } else {
-                mediaHtml = `<div class="post-media-attachment"><img src="${post.media}" class="lightbox-trigger" alt="مرفق"></div>`;
-            }
+// تشغيل التطبيق بمجرد فحص حالة تسجيل الدخول للعميل
+onAuthStateChanged(auth, async (user) => {
+    if (user) {
+        // جلب بيانات المستخدم المسجل من الفاير ستور
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+        if (userDoc.exists()) {
+            currentUserData = userDoc.data();
+        } else {
+            // لو مستخدم جديد سجل بجوجل مثلاً ولم تنشأ له بيانات بعد
+            currentUserData = {
+                uid: user.uid,
+                name: user.displayName || "مطور جديد",
+                email: user.email,
+                avatar: user.photoURL || DEFAULT_AVATAR,
+                bio: "مرحباً بك في منصتي الافتراضية!",
+                followers: [],
+                following: [],
+                savedPosts: []
+            };
+            await setDoc(doc(db, "users", user.uid), currentUserData);
         }
         
-        return `
-            <div class="feed-card" data-id="${post.id}">
-                <div class="card-header">
-                    <div class="card-user-info">
-                        <img class="user-avatar" src="${post.avatar}" alt="${post.author}">
-                        <div class="post-meta">
-                            <h4>${post.author}</h4>
-                            <span>${post.time}</span>
+        // تحديث واجهة المستخدم بالبيانات الحقيقية
+        updateUIWithUserData();
+        listenToFeed();
+        listenToNotes();
+        listenToNotifications();
+        setupSearch();
+    } else {
+        // إذا كان المستخدم غير مسجل، يمكنك توجيهه لصفحة تسجيل الدخول أو إظهار نافذة التسجيل
+        console.log("المستخدم غير مسجل دخول حالياً.");
+        showToast("⚠️ يرجى تسجيل الدخول للوصول لكامل الميزات", "error");
+    }
+});
+
+// 4. دالة تحديث عناصر الواجهة الثابتة ببيانات المستخدم الحقيقي
+function updateUIWithUserData() {
+    const headerAvatar = document.getElementById("user-header-avatar");
+    const createPostAvatar = document.getElementById("create-post-avatar");
+    
+    if (headerAvatar) headerAvatar.src = currentUserData.avatar || DEFAULT_AVATAR;
+    if (createPostAvatar) createPostAvatar.src = currentUserData.avatar || DEFAULT_AVATAR;
+}
+
+// 5. محرك التايملاين الحي والمباشر (Real-time Timeline Feed)
+function listenToFeed() {
+    const feedContainer = document.getElementById("app-timeline-feed");
+    if (!feedContainer) return;
+
+    const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
+    
+    // مراقبة حية ومباشرة بدون عمل Refresh للمتصفح
+    onSnapshot(q, (snapshot) => {
+        if (snapshot.empty) {
+            feedContainer.innerHTML = `<p style="text-align:center; color:var(--text-secondary); padding:30px;">لا يوجد منشورات حالياً، شاركنا أول منشور حقيقي!</p>`;
+            return;
+        }
+
+        feedContainer.innerHTML = snapshot.docs.map(docSnap => {
+            const post = docSnap.data();
+            const postId = docSnap.id;
+            const isLiked = post.likedBy && post.likedBy.includes(auth.currentUser.uid);
+            const isSaved = currentUserData.savedPosts && currentUserData.savedPosts.includes(postId);
+            
+            // تحويل النص لمعالجة الهاشتاجات تلقائياً
+            const formattedText = post.text.replace(/#(\w+)/g, '<span class="hashtag">#$1</span>');
+
+            let mediaHtml = "";
+            if (post.mediaUrl) {
+                if (post.mediaType === "video") {
+                    mediaHtml = `<div class="post-media-attachment"><video src="${post.mediaUrl}" controls></video></div>`;
+                } else {
+                    mediaHtml = `<div class="post-media-attachment"><img src="${post.mediaUrl}" class="lightbox-trigger" alt="مرفق"></div>`;
+                }
+            }
+
+            return `
+                <div class="feed-card" data-id="${postId}">
+                    <div class="card-header">
+                        <div class="card-user-info">
+                            <img class="user-avatar" src="${post.authorAvatar || DEFAULT_AVATAR}" alt="Avatar" onclick="window.location.href='profile.html?uid=${post.authorId}'">
+                            <div class="post-meta">
+                                <h4 onclick="window.location.href='profile.html?uid=${post.authorId}'">${post.authorName}</h4>
+                                <span>${post.createdAt ? new Date(post.createdAt.toDate()).toLocaleDateString('ar-EG') : 'الآن'}</span>
+                            </div>
                         </div>
+                        ${post.authorId !== auth.currentUser.uid ? `<button class="follow-btn-inline" onclick="toggleFollow('${post.authorId}')">متابعة</button>` : ''}
+                    </div>
+                    <p class="post-body-text">${formattedText}</p>
+                    ${mediaHtml}
+                    <div class="card-actions-bar">
+                        <button class="action-btn like-btn ${isLiked ? 'liked' : ''}" onclick="toggleLike('${postId}', ${isLiked})">
+                            ❤️ <span>${post.likesCount || 0}</span> تفاعل
+                        </button>
+                        <button class="action-btn open-comments-btn" onclick="openComments('${postId}')">
+                            💬 <span>${post.commentsCount || 0}</span> التعليقات
+                        </button>
+                        <button class="action-btn save-btn ${isSaved ? 'saved' : ''}" onclick="toggleSavePost('${postId}', ${isSaved})">
+                            🔖 حفظ المنشور
+                        </button>
                     </div>
                 </div>
-                <p class="post-body-text">${post.text}</p>
-                ${mediaHtml}
-                <div class="card-actions-bar">
-                    <button class="action-btn like-toggle-btn ${post.liked ? 'liked' : ''}">
-                        ❤️ <span>${post.likes}</span> إعجاب
-                    </button>
-                    <button class="action-btn open-comments-btn">
-                        💬 <span>${post.comments.length}</span> تعليق
-                    </button>
-                </div>
-            </div>
-        `;
-    }).join('');
+            `;
+        }).join('');
+    });
 }
 
-// 4. إعداد وتفعيل مراقبي الأحداث (Event Listeners)
-let currentSelectedFile = null;
-let activePostIdForComments = null;
-
-function setupEventListeners() {
-    // معالجة رفع ومعاينة الميديا
-    const fileInput = document.getElementById('file-upload-input');
-    const previewZone = document.getElementById('file-preview-zone');
-    const previewMount = document.getElementById('preview-render-mount');
-    const cancelPreviewBtn = document.getElementById('cancel-preview-btn');
+// 6. ميزة إنشاء ونشر بوست حقيقي مع الميديا والهاشتاجات والرفع للـ Storage
+window.publishPost = async function() {
+    const textarea = document.getElementById("post-textarea");
+    const fileInput = document.getElementById("file-upload-input");
+    const text = textarea.value.trim();
     
-    if (fileInput) {
-        fileInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                currentSelectedFile = file;
-                const fileUrl = URL.createObjectURL(file);
-                previewZone.style.display = 'block';
-                
-                if (file.type.startsWith('video/')) {
-                    previewMount.innerHTML = `<video src="${fileUrl}" controls style="width:100%;"></video>`;
-                } else {
-                    previewMount.innerHTML = `<img src="${fileUrl}" style="width:100%;" />`;
-                }
-            }
-        });
-    }
-    
-    if (cancelPreviewBtn) {
-        cancelPreviewBtn.addEventListener('click', () => {
-            currentSelectedFile = null;
-            previewZone.style.display = 'none';
-            previewMount.innerHTML = '';
-            if (fileInput) fileInput.value = '';
-        });
+    if (!text && !fileInput.files[0]) {
+        showToast("⚠️ اكتب نصاً أو ارفق ملفاً لنشره", "error");
+        return;
     }
 
-    // نشر بوست جديد
-    const publishBtn = document.getElementById('publish-post-btn');
-    const postTextarea = document.getElementById('post-textarea');
-    
-    if (publishBtn) {
-        publishBtn.addEventListener('click', () => {
-            const text = postTextarea.value.trim();
-            if (!text && !currentSelectedFile) {
-                showToast('⚠️ يرجى كتابة نص أو إرفاق ميديا أولاً', 'error');
-                return;
-            }
-            
-            // بناء بوست جديد وإضافته فوراً لأعلى التايملاين
-            const newPost = {
-                id: Date.now(),
-                author: 'أنت',
-                avatar: 'https://img.icons8.com/illustrations/style=flat/color=blue/card-user.png',
-                time: 'الآن',
-                text: text,
-                media: currentSelectedFile ? URL.createObjectURL(currentSelectedFile) : null,
-                mediaType: currentSelectedFile && currentSelectedFile.type.startsWith('video/') ? 'video' : 'image',
-                likes: 0,
-                liked: false,
-                comments: []
-            };
-            
-            mockPosts.unshift(newPost);
-            renderFeed();
-            
-            // تصفية الحقول بعد النشر
-            postTextarea.value = '';
-            if (cancelPreviewBtn) cancelPreviewBtn.click();
-            showToast('✅ تم نشر منشورك بنجاح', 'success');
-        });
+    showToast("⏳ جاري نشر مشاركتك الفخمة...", "info");
+    let mediaUrl = null;
+    let mediaType = "image";
+
+    if (fileInput.files[0]) {
+        const file = fileInput.files[0];
+        mediaType = file.type.startsWith("video/") ? "video" : "image";
+        const storageRef = ref(storage, `posts/${Date.now()}_${file.name}`);
+        const uploadSnap = await uploadBytes(storageRef, file);
+        mediaUrl = await getDownloadURL(uploadSnap.ref);
     }
 
-    // كتابة نوتة سريعة جديدة
-    const submitNoteBtn = document.getElementById('submit-note-btn');
-    const noteInput = document.getElementById('note-input');
-    if (submitNoteBtn && noteInput) {
-        submitNoteBtn.addEventListener('click', () => {
-            const text = noteInput.value.trim();
-            if (!text) return;
-            
-            mockNotes.unshift({
-                id: Date.now(),
-                username: 'أنت',
-                text: text,
-                avatar: 'https://img.icons8.com/illustrations/style=flat/color=blue/card-user.png'
-            });
-            renderNotes();
-            noteInput.value = '';
-            showToast('💡 تم تحديث حالتك السريعة', 'success');
+    // استخراج الهاشتاجات وحفظها في مصفوفة مستقلة للبحث المتقدم لاحقاً
+    const hashtags = text.match(/#(\w+)/g) || [];
+
+    await addDoc(collection(db, "posts"), {
+        text: text,
+        mediaUrl: mediaUrl,
+        mediaType: mediaType,
+        hashtags: hashtags,
+        authorId: auth.currentUser.uid,
+        authorName: currentUserData.name,
+        authorAvatar: currentUserData.avatar,
+        likesCount: 0,
+        likedBy: [],
+        commentsCount: 0,
+        createdAt: new Date()
+    });
+
+    textarea.value = "";
+    fileInput.value = "";
+    document.getElementById("file-preview-zone").style.display = "none";
+    showToast("✅ تم النشر في التايملاين بنجاح!");
+};
+
+// 7. ميزة الإعجاب (Like) الحقيقي والذكي
+window.toggleLike = async function(postId, isLiked) {
+    const postRef = doc(db, "posts", postId);
+    const userId = auth.currentUser.uid;
+
+    if (isLiked) {
+        await updateDoc(postRef, {
+            likedBy: arrayRemove(userId),
+            likesCount: increment(-1)
         });
-    }
-
-    // التحكم في التفاعل جوه التايملاين (الإعجابات، صفيحة التعليقات، والـ Lightbox)
-    const feedContainer = document.getElementById('app-timeline-feed');
-    if (feedContainer) {
-        feedContainer.addEventListener('click', (e) => {
-            const card = e.target.closest('.feed-card');
-            if (!card) return;
-            const postId = parseInt(card.dataset.id);
-            const post = mockPosts.find(p => p.id === postId);
-            
-            // زر الإعجاب
-            if (e.target.closest('.like-toggle-btn')) {
-                post.liked = !post.liked;
-                post.likes += post.liked ? 1 : -1;
-                renderFeed();
-            }
-            
-            // فتح صفيحة التعليقات السفلية (Bottom Sheet)
-            if (e.target.closest('.open-comments-btn')) {
-                openCommentsSheet(post);
-            }
-            
-            // تفعيل نظام الـ Lightbox عند الضغط على الصورة
-            if (e.target.classList.contains('lightbox-trigger')) {
-                const lightbox = document.getElementById('media-lightbox');
-                const lightboxImg = document.getElementById('lightbox-img');
-                if (lightbox && lightboxImg) {
-                    lightboxImg.src = e.target.src;
-                    lightbox.style.display = 'flex';
-                }
-            }
-        });
-    }
-
-    // إغلاق الـ Lightbox
-    const closeLightbox = document.querySelector('.close-lightbox');
-    if (closeLightbox) {
-        closeLightbox.addEventListener('click', () => {
-            document.getElementById('media-lightbox').style.display = 'none';
-        });
-    }
-
-    // إغلاق صفيحة التعليقات
-    const closeSheetBtn = document.getElementById('close-sheet-btn');
-    const backdrop = document.getElementById('comments-backdrop');
-    if (closeSheetBtn) closeSheetBtn.addEventListener('click', closeCommentsSheet);
-    if (backdrop) backdrop.addEventListener('click', closeCommentsSheet);
-
-    // إرسال تعليق جديد جوه الصفيحة
-    const sendCommentBtn = document.getElementById('send-comment-btn');
-    const newCommentInput = document.getElementById('new-comment-input');
-    if (sendCommentBtn && newCommentInput) {
-        sendCommentBtn.addEventListener('click', () => {
-            const commentText = newCommentInput.value.trim();
-            if (!commentText || !activePostIdForComments) return;
-            
-            const post = mockPosts.find(p => p.id === activePostIdForComments);
-            post.comments.push({
-                author: 'أنت',
-                text: commentText
-            });
-            
-            newCommentInput.value = '';
-            openCommentsSheet(post); // إعادة رسم التعليقات لتظهر الجديدة
-            renderFeed(); // تحديث عداد التعليقات في التايملاين الأساسي
-        });
-    }
-
-    // زر تغيير المظهر (Theme Toggle) يدويًا للتجربة
-    const themeBtn = document.getElementById('theme-toggle-btn');
-    if (themeBtn) {
-        themeBtn.addEventListener('click', () => {
-            const currentTheme = document.documentElement.style.getPropertyValue('--bg-main');
-            if (currentTheme === '#0b0c10') {
-                document.documentElement.style.setProperty('--bg-main', '#f0f2f5');
-                document.documentElement.style.setProperty('--bg-surface', '#ffffff');
-                document.documentElement.style.setProperty('--text-primary', '#1c1e21');
-            } else {
-                document.documentElement.style.setProperty('--bg-main', '#0b0c10');
-                document.documentElement.style.setProperty('--bg-surface', '#1f2833');
-                document.documentElement.style.setProperty('--text-primary', '#c5c6c7');
-            }
-        });
-    }
-}
-
-// وظائف صفيحة التعليقات السفلية
-function openCommentsSheet(post) {
-    activePostIdForComments = post.id;
-    document.getElementById('comments-title').innerText = `التعليقات (${post.comments.length})`;
-    
-    const container = document.getElementById('comments-list-container');
-    if (post.comments.length === 0) {
-        container.innerHTML = `<p style="text-align:center; color:var(--text-secondary); padding:20px;">لا توجد تعليقات بعد، كن أول من يعلق!</p>`;
     } else {
-        container.innerHTML = post.comments.map(c => `
-            <div class="comment-item">
-                <div class="comment-bubble">
-                    <strong style="display:block; font-size:12px; margin-bottom:2px; color:var(--accent-color);">${c.author}</strong>
-                    <span style="font-size:14px;">${c.text}</span>
-                </div>
-            </div>
-        `).join('');
+        await updateDoc(postRef, {
+            likedBy: arrayUnion(userId),
+            likesCount: increment(1)
+        });
+        // إرسال إشعار لصاحب البوست
+        const postSnap = await getDoc(postRef);
+        if(postSnap.exists() && postSnap.data().authorId !== userId) {
+            sendNotification(postSnap.data().authorId, "إعجاب جديد", `${currentUserData.name} أعجب بمنشورك الحسابي.`);
+        }
     }
+};
+
+// 8. نظام البحث المتقدم الذكي (أشخاص / هاشتاجات)
+function setupSearch() {
+    const searchInput = document.getElementById("global-search-input");
+    const resultsBox = document.getElementById("search-results-dropdown");
+    if (!searchInput || !resultsBox) return;
+
+    searchInput.addEventListener("input", async (e) => {
+        const term = e.target.value.trim().toLowerCase();
+        if (!term) {
+            resultsBox.style.display = "none";
+            return;
+        }
+
+        // بحث محلي أو جلب سريع من الفاير ستور (مثال للأشخاص والهاشتاجات)
+        resultsBox.style.display = "block";
+        resultsBox.innerHTML = `<p style="padding:10px; font-size:12px; color:var(--text-secondary)">جاري البحث عن "${term}"...</p>`;
+        
+        // جلب الأشخاص المتطابقين في الاسم
+        const qUsers = query(collection(db, "users"), where("name", ">=", term), where("name", "<=", term + "\uf8ff"));
+        const snapshot = await getDoc(qUsers); // أو getDocs حسب هيكلية الاستدعاء
+        
+        // رسم النتائج بشكل نظيف (Clean Dropdown)
+        resultsBox.innerHTML = `
+            <div style="padding:10px; font-weight:bold; font-size:12px; border-bottom:1px solid var(--border-color)">النتائج المطابقة</div>
+            <div style="padding:10px; cursor:pointer;" onclick="filterTimelineByHashtag('${term}')">🔍 ابحث عن هاشتاج #${term}</div>
+        `;
+    });
+}
+
+// 9. محرك الشات والرسائل الفورية (WebSocket-like Real-time Chat)
+window.loadDirectChat = function(targetUserId, targetUserName) {
+    activeChatUserId = targetUserId;
+    document.getElementById("active-chat-name").innerText = targetUserName;
     
-    document.getElementById('comments-backdrop').classList.add('open');
-    document.getElementById('comments-sheet').classList.add('open');
+    const messagesBox = document.getElementById("chat-messages-box");
+    if (!messagesBox) return;
+
+    if (unsubscribeChat) unsubscribeChat();
+
+    const chatId = [auth.currentUser.uid, targetUserId].sort().join("_");
+    const q = query(collection(db, "chats", chatId, "messages"), orderBy("timestamp", "asc"));
+
+    unsubscribeChat = onSnapshot(q, (snapshot) => {
+        messagesBox.innerHTML = snapshot.docs.map(docSnap => {
+            const msg = docSnap.data();
+            const isOutgoing = msg.senderId === auth.currentUser.uid;
+            return `
+                <div class="msg-bubble ${isOutgoing ? 'outgoing' : 'incoming'}">
+                    ${msg.text}
+                </div>
+            `;
+        }).join('');
+        messagesBox.scrollTop = messagesBox.scrollHeight;
+    });
+};
+
+// 10. إرسال إشعارات حقيقية وحفظها في قاعدة البيانات للمستخدمين
+async function sendNotification(targetUid, title, body) {
+    await addDoc(collection(db, "users", targetUid, "notifications"), {
+        title: title,
+        body: body,
+        read: false,
+        timestamp: new Date()
+    });
 }
 
-function closeCommentsSheet() {
-    document.getElementById('comments-backdrop').classList.remove('open');
-    document.getElementById('comments-sheet').classList.remove('open');
-    activePostIdForComments = null;
+function listenToNotifications() {
+    const q = query(collection(db, "users", auth.currentUser.uid, "notifications"), where("read", "==", false));
+    onSnapshot(q, (snapshot) => {
+        const badge = document.getElementById("notif-count");
+        if (badge) {
+            if (snapshot.size > 0) {
+                badge.innerText = snapshot.size;
+                badge.style.display = "inline-block";
+            } else {
+                badge.style.display = "none";
+            }
+        }
+    });
 }
 
-// نظام الـ Toast الإشعاري الذكي
-function showToast(message, type = 'success') {
-    const toast = document.getElementById('system-toast');
-    const textSpan = document.getElementById('toast-text');
-    const iconSpan = document.getElementById('toast-icon');
+// 11. نظام التوست المنسق المطور لبث الرسائل والعمليات
+function showToast(message, type = "success") {
+    const toast = document.getElementById("system-toast");
+    const textSpan = document.getElementById("toast-text");
+    const iconSpan = document.getElementById("toast-icon");
     
     if (!toast || !textSpan) return;
     
     textSpan.innerText = message;
-    iconSpan.innerText = type === 'success' ? '✨' : '⚠️';
+    if (type === "error") iconSpan.innerText = "⚠️";
+    else if (type === "info") iconSpan.innerText = "⏳";
+    else iconSpan.innerText = "🔔";
     
-    toast.classList.add('show');
-    setTimeout(() => {
-        toast.classList.remove('show');
-    }, 3500);
+    toast.classList.add("show");
+    setTimeout(() => { toast.classList.remove("show"); }, 4000);
 }
+
+// تفعيل وتأمين ميزة النشر لزر الواجهة
+document.addEventListener("DOMContentLoaded", () => {
+    const pubBtn = document.getElementById("publish-post-btn");
+    if(pubBtn) pubBtn.addEventListener("click", window.publishPost);
+});
