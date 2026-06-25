@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>المحادثات | Friends</title>
+    <title>المحادثات المباشرة | Friends</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        /* تصاميم مخصصة لصفحة الشات لتندمج مع الـ style.css الأصلي */
+        /* تنسيقات الشات المركزية النظيفة Clean UI */
         .chat-app-wrapper {
             display: flex;
-            height: calc(100vh - 125px);
+            height: calc(100vh - 140px);
             background-color: var(--bg-surface);
             border-radius: var(--radius-lg);
             border: 1px solid var(--border-color);
@@ -28,7 +28,7 @@
             padding: 16px;
             border-bottom: 1px solid var(--border-color);
             font-weight: 700;
-            font-size: 16px;
+            font-size: 15px;
         }
 
         .chat-users-list {
@@ -40,21 +40,39 @@
             display: flex;
             align-items: center;
             gap: 12px;
-            padding: 12px 16px;
+            padding: 14px 16px;
             cursor: pointer;
             transition: background 0.2s;
             border-bottom: 1px solid var(--bg-main);
+            position: relative;
         }
         .chat-user-item:hover, .chat-user-item.active {
             background-color: var(--bg-main);
         }
 
-        .user-status-dot {
-            width: 10px;
-            height: 10px;
-            background-color: #2ec4b6;
-            border-radius: 50%;
-            margin-right: auto;
+        .user-meta-chat h4 {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        .user-meta-chat p {
+            font-size: 11px;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 120px;
+        }
+
+        .unread-badge {
+            background-color: var(--accent-color);
+            color: white;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 10px;
+            position: absolute;
+            left: 16px;
+            font-weight: bold;
         }
 
         .chat-main-area {
@@ -65,13 +83,14 @@
         }
 
         .chat-area-header {
-            padding: 14px 16px;
+            padding: 12px 16px;
             background-color: var(--bg-surface);
             border-bottom: 1px solid var(--border-color);
             display: flex;
             align-items: center;
             gap: 10px;
         }
+        .chat-area-header h4 { font-size: 14px; font-weight: 700; }
 
         .messages-container {
             flex: 1;
@@ -79,15 +98,16 @@
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 10px;
         }
 
         .msg-bubble {
-            max-width: 70%;
+            max-width: 65%;
             padding: 10px 14px;
             border-radius: var(--radius-md);
-            font-size: 14px;
+            font-size: 13.5px;
             line-height: 1.4;
+            word-wrap: break-word;
         }
         .msg-bubble.incoming {
             background-color: var(--bg-surface);
@@ -103,7 +123,7 @@
         }
 
         .chat-area-footer {
-            padding: 12px 16px;
+            padding: 12px;
             background-color: var(--bg-surface);
             border-top: 1px solid var(--border-color);
             display: flex;
@@ -117,11 +137,12 @@
             padding: 10px 16px;
             border-radius: 20px;
             outline: none;
+            font-size: 13px;
         }
 
-        @media (max-width: 480px) {
-            .chat-sidebar { width: 80px; }
-            .sidebar-header, .chat-user-item h4, .user-status-dot { display: none; }
+        @media (max-width: 600px) {
+            .chat-sidebar { width: 75px; }
+            .sidebar-header, .user-meta-chat, .unread-badge { display: none; }
             .chat-user-item { justify-content: center; padding: 10px; }
         }
     </style>
@@ -133,44 +154,36 @@
             <a href="index.html" class="app-logo">Friends</a>
         </div>
         <div class="header-left">
-            <img class="nav-avatar" src="https://img.icons8.com/illustrations/style=flat/color=blue/card-user.png" alt="بروفايلك">
+            <img id="chat-header-avatar" class="nav-avatar" src="https://www.instagram.com/static/images/anonymousUser.jpg/73e970b629f6.jpg" alt="أنت" onclick="window.location.href='profile.html'">
         </div>
     </header>
 
-    <main class="app-container" style="max-width: 800px;">
+    <main class="app-container" style="max-width: 850px;">
         <div class="chat-app-wrapper">
             
             <div class="chat-sidebar">
-                <div class="sidebar-header">الرسائل المباشرة</div>
-                <div class="chat-users-list">
-                    <div class="chat-user-item active">
-                        <img class="user-avatar" src="https://img.icons8.com/illustrations/style=flat/color=blue/businessman.png" alt="أحمد">
-                        <h4>م. أحمد</h4>
-                        <div class="user-status-dot"></div>
-                    </div>
-                    <div class="chat-user-item">
-                        <img class="user-avatar" src="https://img.icons8.com/illustrations/style=flat/color=blue/businesswoman.png" alt="سارة">
-                        <h4>سارة كريم</h4>
-                    </div>
+                <div class="sidebar-header">الرسائل النشطة</div>
+                <div class="chat-users-list" id="active-friends-list">
+                    <p style="text-align: center; color: var(--text-secondary); padding: 20px; font-size: 12px;">جاري مزامنة الأصدقاء...</p>
                 </div>
             </div>
 
-            <div class="chat-main-area">
+            <div class="chat-main-area" id="chat-window-pane" style="display: none;">
                 <div class="chat-area-header">
-                    <img class="user-avatar" id="active-chat-avatar" src="https://img.icons8.com/illustrations/style=flat/color=blue/businessman.png" alt="أحمد">
-                    <h4 id="active-chat-name">م. أحمد</h4>
+                    <img class="user-avatar" id="active-chat-avatar" src="https://www.instagram.com/static/images/anonymousUser.jpg/73e970b629f6.jpg" alt="المستلم">
+                    <h4 id="active-chat-name">اختر صديقاً لبدء الشات</h4>
                 </div>
                 
-                <div class="messages-container" id="chat-messages-box">
-                    <div class="msg-bubble incoming">أهلاً يا هندسة! كنت حابب أستشيرك في توزيع الأحمال في المشروع الجديد؟</div>
-                    <div class="msg-bubble outgoing">أهلاً بك يا بشمهندس، رقبتي ليك طبعاً.. قولي إيه التفاصيل اللي شغال عليها؟</div>
-                    <div class="msg-bubble incoming">تسلم يا غالي، هرسلك المخطط الهندسي التفصيلي فوراً للإطلاع.</div>
-                </div>
+                <div class="messages-container" id="chat-messages-box"></div>
 
                 <div class="chat-area-footer">
-                    <input type="text" id="chat-message-input" placeholder="اكتب رسالتك المباشرة هنا...">
+                    <input type="text" id="chat-message-input" placeholder="اكتب رسالة فورية آمنة...">
                     <button id="send-msg-btn" class="btn-primary">إرسال</button>
                 </div>
+            </div>
+
+            <div class="chat-main-area" id="chat-blank-pane" style="flex:1; justify-content:center; align-items:center; color:var(--text-secondary);">
+                <p style="font-size:14px; font-weight:600;">💬 اختر أي مستخدم حقيقي من القائمة الجانبية لبدء المحادثة فوراً</p>
             </div>
 
         </div>
@@ -178,33 +191,29 @@
 
     <nav class="bottom-nav">
         <a href="index.html" class="nav-item"><span>🏠</span><p>الرئيسية</p></a>
-        <a href="#" class="nav-item"><span>🔍</span><p>الاستكشاف</p></a>
+        <a href="index.html?action=explore" class="nav-item"><span>🔍</span><p>الاستكشاف</p></a>
         <a href="chat.html" class="nav-item active"><span>💬</span><p>الرسائل</p></a>
-        <a href="#" class="nav-item"><span>👤</span><p>الملف</p></a>
+        <a href="profile.html" class="nav-item"><span>👤</span><p>الملف</p></a>
     </nav>
 
-    <script>
-        // كود تشغيل محلي فوري لإرسال الرسائل داخل الصفحة وتحديث الشاشة بلحظتها
+    <script type="module">
+        import { loadDirectChat } from "./app.js";
+        
+        // الكود المكتوب هنا يربط أزرار الـ HTML بالدوال الحية جوه الـ app.js تلقائياً عند الضغط
         document.getElementById('send-msg-btn').addEventListener('click', () => {
             const input = document.getElementById('chat-message-input');
             const text = input.value.trim();
             if(!text) return;
 
-            const msgBox = document.getElementById('chat-messages-box');
-            const newMsg = document.createElement('div');
-            newMsg.className = 'msg-bubble outgoing';
-            newMsg.innerText = text;
-            
-            msgBox.appendChild(newMsg);
-            input.value = '';
-            msgBox.scrollTop = msgBox.scrollHeight; // سحب الشات لأسفل رسالة تلقائياً
+            // استدعاء دالة الإرسال الحقيقية المرتبطة بـ Firebase
+            if(window.sendDirectMessage) {
+                window.sendDirectMessage(text);
+                input.value = '';
+            }
         });
 
-        // تشغيل الإرسال بالضغط على زر Enter
         document.getElementById('chat-message-input').addEventListener('keypress', (e) => {
-            if(e.key === 'Enter') {
-                document.getElementById('send-msg-btn').click();
-            }
+            if(e.key === 'Enter') document.getElementById('send-msg-btn').click();
         });
     </script>
 </body>
