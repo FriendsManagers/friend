@@ -1,98 +1,104 @@
 <!DOCTYPE html>
-<html lang="ar" dir="auto">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Friends - Ultra Clean Social</title>
-    <!-- ربط الستايل الموحد -->
-    <link rel="stylesheet" href="./style.css">
+    <title>Friends | المنصة الرسمية</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <!-- الهيدر العلوي الزجاجي الثابت -->
+    <!-- شاشة تسجيل الدخول وإنشاء الحساب الصارمة حماية للموقع -->
+    <div id="auth-overlay" class="auth-overlay">
+        <div class="auth-card">
+            <h2 id="auth-title">تسجيل الدخول</h2>
+            <p id="auth-subtitle">سجل دخولك الآن للولوج إلى منصة Friends الحقيقية.</p>
+            
+            <div class="auth-form-group" id="name-group" style="display: none;">
+                <label>الاسم الكامل</label>
+                <input type="text" id="auth-name" placeholder="أدخل اسمك الكامل">
+            </div>
+            
+            <div class="auth-form-group">
+                <label>البريد الإلكتروني</label>
+                <input type="email" id="auth-email" placeholder="name@example.com" style="text-align: left; direction: ltr;">
+            </div>
+            
+            <div class="auth-form-group">
+                <label>كلمة المرور</label>
+                <input type="password" id="auth-password" placeholder="••••••••" style="text-align: left; direction: ltr;">
+            </div>
+            
+            <button id="auth-submit-btn" class="btn-primary" style="width: 100%; padding: 12px; margin-top: 10px;">دخول</button>
+            
+            <p class="auth-switch-text" id="auth-switch">ليس لديك حساب؟ <span id="auth-switch-btn">إنشاء حساب جديد</span></p>
+        </div>
+    </div>
+
+    <!-- الهيدر العلوي المطور بالتأثير الزجاجي المستقر -->
     <header class="main-header">
-        <a href="./index.html" class="app-logo">Friends</a>
+        <a href="index.html" class="app-logo">Friends</a>
         <div class="header-left">
             <button class="circle-btn" id="noti-btn">🔔</button>
-            <a href="./profile.html" style="display:inline-block; border-radius:50%; overflow:hidden;">
-                <img src="https://www.gravatar.com/avatar/?d=mp" alt="Profile" class="user-avatar" id="nav-profile-img" style="width:32px; height:32px; object-fit:cover;">
-            </a>
+            <img src="https://www.gravatar.com/avatar/?d=mp" class="nav-avatar" id="nav-profile-img" onclick="window.location.href='profile.html'">
         </div>
     </header>
 
-    <!-- الحاوية الرئيسية للمنصة -->
+    <!-- الحاوية الرئيسية للتطبيق والتايملاين -->
     <main class="app-container">
         
-        <!-- صندوق إنشاء نشر منشور جديد (Premium Publisher) -->
-        <section class="publisher-card">
-            <div class="publisher-body">
-                <img src="https://www.gravatar.com/avatar/?d=mp" alt="User" class="user-avatar">
-                <textarea id="post-textarea" placeholder="What's on your mind? Share your moments..."></textarea>
+        <!-- صندوق إنشاء المنشور الفخم والمحدد تماماً -->
+        <section class="create-post-box">
+            <div class="post-input-row">
+                <img src="https://www.gravatar.com/avatar/?d=mp" class="user-avatar" id="publisher-avatar">
+                <textarea id="post-textarea" placeholder="ماذا يدور في ذهنك اليوم؟"></textarea>
             </div>
-            <div class="publisher-actions-bar">
-                <button class="action-btn" onclick="window.showToast('Photo upload coming soon!', '📷')">📷 Photo</button>
-                <button class="btn-primary" id="publish-post-btn">Publish</button>
-            </div>
-        </section>
-
-        <!-- خلاصة المنشورات اللايف (Feed Timeline) -->
-        <section id="feed-timeline-container" class="timeline-feed-grid">
-            <!-- الشيمر لودينج اللطيف (Shimmer Effect) بيظهر قبل تحميل الداتا -->
-            <div class="shimmer-card">
-                <div class="shimmer-line line-short"></div>
-                <div class="shimmer-line line-long"></div>
-            </div>
-            <div class="shimmer-card">
-                <div class="shimmer-line line-short"></div>
-                <div class="shimmer-line line-long"></div>
+            <div class="post-actions-row">
+                <div class="upload-label">⚡ شبكة حقيقية لايف</div>
+                <button id="publish-post-btn" class="btn-primary">نشر المنشور</button>
             </div>
         </section>
 
+        <!-- التايملاين الحقيقي والمنشورات -->
+        <section id="feed-timeline-container">
+            <div class="shimmer-card">
+                <div class="shimmer-line line-short"></div>
+                <div class="shimmer-line line-long"></div>
+                <div class="shimmer-line"></div>
+            </div>
+        </section>
     </main>
 
-    <!-- الـ Bottom Sheet المطور للتعليقات لايف -->
-    <div class="bottom-sheet-backdrop" id="comments-backdrop"></div>
+    <!-- صفيحة التعليقات السفلية الديناميكية المصلحة -->
+    <div class="backdrop" id="comments-backdrop"></div>
     <div class="bottom-sheet" id="comments-sheet">
         <div class="sheet-header">
             <div class="drag-handle"></div>
-            <h3>Comments</h3>
-            <button class="circle-btn" id="close-comments-btn">&times;</button>
+            <div class="close-sheet" id="close-comments-btn">✕</div>
+            <h3 style="font-size: 16px; font-weight: 800;">التعليقات لايف</h3>
         </div>
-        <div class="sheet-body" id="comments-list-body">
-            <!-- التعليقات هتحقن هنا بالـ JS -->
+        <div class="sheet-body" id="sheet-comments-body">
+            <!-- التعليقات الحقيقية تُحقن هنا بالثانية -->
         </div>
         <div class="sheet-footer">
-            <input type="text" id="new-comment-input" placeholder="Write an ultra-clean comment...">
-            <button class="btn-primary" id="send-comment-btn" style="padding: 10px 20px;">Send</button>
+            <input type="text" id="comment-input" placeholder="اكتب تعليقك الحقيقي الحين...">
+            <button id="submit-comment-btn" class="btn-primary">إرسال</button>
         </div>
     </div>
 
-    <!-- الـ Lightbox العالمي لعرض الصور المكبرة بنقاء عالي -->
-    <div class="lightbox-overlay" id="global-lightbox" style="display: none;">
-        <span class="close-lightbox" id="close-lightbox-btn">&times;</span>
-        <img src="" alt="Enlarged Media" id="lightbox-img" class="lightbox-content">
-    </div>
-
-    <!-- التوست الإشعاري المنسق (Toast Notification) -->
-    <div class="toast" id="app-toast">
+    <!-- التوست الإشعاري -->
+    <div id="app-toast" class="toast">
         <span class="toast-icon">✨</span>
-        <span class="toast-text-message">Done successfully!</span>
+        <span class="toast-text-message">تمت العملية بنجاح!</span>
     </div>
 
-    <!-- شريط التنقل السفلي الموحد والثابت -->
+    <!-- شريط التنقل السفلي الثابت -->
     <nav class="bottom-nav">
-        <a href="./index.html" class="nav-item active">
-            <span>🏠</span>Home
-        </a>
-        <a href="./chats.html" class="nav-item">
-            <span>💬</span>Chats
-        </a>
-        <a href="./profile.html" class="nav-item">
-            <span>👤</span>Profile
-        </a>
+        <a href="index.html" class="nav-item active"><span>🏠</span>الرئيسية</a>
+        <a href="chats.html" class="nav-item"><span>💬</span>المحادثات</a>
+        <a href="profile.html" class="nav-item"><span>👤</span>الملف الشخصي</a>
     </nav>
 
-    <!-- الربط الصحيح والمضمون لجيت هاب بيجز -->
-    <script type="module" src="./app.js"></script>
+    <script type="module" src="app.js"></script>
 </body>
 </html>
