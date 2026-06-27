@@ -3,146 +3,96 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Friends - Connect & Share</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Friends - Ultra Clean Social</title>
+    <!-- ربط الستايل الموحد -->
+    <link rel="stylesheet" href="./style.css">
 </head>
 <body>
 
+    <!-- الهيدر العلوي الزجاجي الثابت -->
     <header class="main-header">
-        <a href="#" class="app-logo">Friends</a>
-        
+        <a href="./index.html" class="app-logo">Friends</a>
         <div class="header-left">
-            <button class="circle-btn" id="noti-btn">
-                🔔
-                <span class="badge">3</span>
-            </button>
-            <img src="https://via.placeholder.com/150" alt="User Profile" class="nav-avatar" id="nav-profile-img">
+            <button class="circle-btn" id="noti-btn">🔔</button>
+            <a href="./profile.html" style="display:inline-block; border-radius:50%; overflow:hidden;">
+                <img src="https://www.gravatar.com/avatar/?d=mp" alt="Profile" class="user-avatar" id="nav-profile-img" style="width:32px; height:32px; object-fit:cover;">
+            </a>
         </div>
     </header>
 
+    <!-- الحاوية الرئيسية للمنصة -->
     <main class="app-container">
         
-        <section class="search-section">
-            <div class="search-bar-wrapper">
-                <input type="text" id="search-input" placeholder="Search friends, posts, hashtags...">
-                <div class="search-results-box" id="search-results" style="display: none;">
-                    </div>
+        <!-- صندوق إنشاء نشر منشور جديد (Premium Publisher) -->
+        <section class="publisher-card">
+            <div class="publisher-body">
+                <img src="https://www.gravatar.com/avatar/?d=mp" alt="User" class="user-avatar">
+                <textarea id="post-textarea" placeholder="What's on your mind? Share your moments..."></textarea>
             </div>
-        </section>
-
-        <section class="notes-wrapper">
-            <div class="add-note-inline">
-                <input type="text" id="note-input" placeholder="Share a thought... (60 letters)">
-                <button class="btn-primary" id="share-note-btn">Note</button>
-            </div>
-            <div class="notes-scroller" id="notes-container">
-                <div class="note-bubble-item">
-                    <div class="note-text-cloud">Listening to music..</div>
-                    <img src="https://via.placeholder.com/150" alt="User" class="note-avatar">
-                </div>
-                </div>
-        </section>
-
-        <section class="create-post-box">
-            <div class="post-input-row">
-                <img src="https://via.placeholder.com/150" alt="My Avatar" class="user-avatar">
-                <textarea id="post-textarea" placeholder="What's on your mind?"></textarea>
-            </div>
-            
-            <div class="preview-zone" id="media-preview-box" style="display: none;">
-                <button class="close-preview" id="cancel-media-btn">&times;</button>
-                <img src="" id="preview-img-element" alt="Preview">
-            </div>
-
-            <div class="post-actions-row">
-                <label for="media-upload" class="upload-label">
-                    🖼️ Photo / Video
-                    <input type="file" id="media-upload" accept="image/*,video/*" style="display: none;">
-                </label>
+            <div class="publisher-actions-bar">
+                <button class="action-btn" onclick="window.showToast('Photo upload coming soon!', '📷')">📷 Photo</button>
                 <button class="btn-primary" id="publish-post-btn">Publish</button>
             </div>
         </section>
 
-        <section id="feed-timeline-container">
-            
-            <article class="feed-card">
-                <div class="card-header">
-                    <div class="card-user-info">
-                        <img src="https://via.placeholder.com/150" alt="Author" class="user-avatar">
-                        <div class="post-meta">
-                            <h4>John Doe</h4>
-                            <span>2 hours ago</span>
-                        </div>
-                    </div>
-                    <button class="follow-btn-inline">Follow</button>
-                </div>
-                
-                <div class="post-body-text">
-                    This is a brand new design for our app! <a href="#" class="hashtag">#Friends2026</a>
-                </div>
-                
-                <div class="post-media-attachment">
-                    <img src="https://via.placeholder.com/600x400" alt="Post Media" class="lightbox-trigger">
-                </div>
-
-                <div class="card-actions-bar">
-                    <button class="action-btn like-trigger">❤️ <span class="count">12</span></button>
-                    <button class="action-btn comment-trigger">💬 <span>Comment</span></button>
-                    <button class="action-btn save-trigger">🔖 <span>Save</span></button>
-                </div>
-            </article>
-
-            <div class="shimmer-card" id="shimmer-loading-placeholder" style="display: none;">
+        <!-- خلاصة المنشورات اللايف (Feed Timeline) -->
+        <section id="feed-timeline-container" class="timeline-feed-grid">
+            <!-- الشيمر لودينج اللطيف (Shimmer Effect) بيظهر قبل تحميل الداتا -->
+            <div class="shimmer-card">
                 <div class="shimmer-line line-short"></div>
                 <div class="shimmer-line line-long"></div>
+            </div>
+            <div class="shimmer-card">
+                <div class="shimmer-line line-short"></div>
                 <div class="shimmer-line line-long"></div>
             </div>
-
         </section>
+
     </main>
 
-    <div class="backdrop" id="comments-backdrop"></div>
+    <!-- الـ Bottom Sheet المطور للتعليقات لايف -->
+    <div class="bottom-sheet-backdrop" id="comments-backdrop"></div>
     <div class="bottom-sheet" id="comments-sheet">
         <div class="sheet-header">
             <div class="drag-handle"></div>
-            <span class="close-sheet" id="close-comments-btn">&times;</span>
             <h3>Comments</h3>
+            <button class="circle-btn" id="close-comments-btn">&times;</button>
         </div>
         <div class="sheet-body" id="comments-list-body">
-            <div class="comment-item">
-                <img src="https://via.placeholder.com/150" alt="User" class="user-avatar" style="width:32px; height:32px;">
-                <div class="comment-bubble">
-                    <strong>Alex:</strong> Great feature layout!
-                </div>
-            </div>
+            <!-- التعليقات هتحقن هنا بالـ JS -->
         </div>
         <div class="sheet-footer">
-            <input type="text" id="new-comment-input" placeholder="Write a comment...">
-            <button class="btn-primary" id="send-comment-btn">Send</button>
+            <input type="text" id="new-comment-input" placeholder="Write an ultra-clean comment...">
+            <button class="btn-primary" id="send-comment-btn" style="padding: 10px 20px;">Send</button>
         </div>
     </div>
 
-    <div class="lightbox" id="global-lightbox" style="display: none;">
+    <!-- الـ Lightbox العالمي لعرض الصور المكبرة بنقاء عالي -->
+    <div class="lightbox-overlay" id="global-lightbox" style="display: none;">
         <span class="close-lightbox" id="close-lightbox-btn">&times;</span>
-        <img id="lightbox-img" src="" alt="Full Scale Image">
+        <img src="" alt="Enlarged Media" id="lightbox-img" class="lightbox-content">
     </div>
 
+    <!-- التوست الإشعاري المنسق (Toast Notification) -->
     <div class="toast" id="app-toast">
         <span class="toast-icon">✨</span>
-        <span class="toast-text-message">Success Message Here</span>
+        <span class="toast-text-message">Done successfully!</span>
     </div>
 
+    <!-- شريط التنقل السفلي الموحد والثابت -->
     <nav class="bottom-nav">
-        <a href="#" class="nav-item active" data-target="feed">
+        <a href="./index.html" class="nav-item active">
             <span>🏠</span>Home
         </a>
-        <a href="#" class="nav-item" data-target="chats">
+        <a href="./chats.html" class="nav-item">
             <span>💬</span>Chats
         </a>
-        <a href="#" class="nav-item" data-target="profile">
+        <a href="./profile.html" class="nav-item">
             <span>👤</span>Profile
         </a>
     </nav>
 
+    <!-- الربط الصحيح والمضمون لجيت هاب بيجز -->
+    <script type="module" src="./app.js"></script>
 </body>
 </html>
