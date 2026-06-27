@@ -1,990 +1,148 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
-
+<html lang="ar" dir="auto">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Friends | تواصل مع أصدقائك</title>
-
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
-
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
-
-    <style>
-        /* ==========================================================================
-           1. نظام الألوان والـ Variables الرائعة المتوافقة مع الـ UX الحديث
-           ========================================================================== */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Cairo', sans-serif;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        :root {
-            --accent-brand: #1877f2;
-            --accent-brand-light: #e7f3ff;
-            --bg-main: #f0f2f5;
-            --bg-card: #ffffff;
-            --bg-input: #f5f6f7;
-            --bg-button-hover: #e4e6eb;
-            --text-main: #050505;
-            --text-secondary: #65676b;
-            --text-muted: #8a8d91;
-            --border-color: #dadde1;
-            --radius-sm: 8px;
-            --radius-md: 16px;
-            --radius-lg: 24px;
-            --radius-round: 50%;
-            --shadow-subtle: 0 4px 12px rgba(0, 0, 0, .05);
-            --shadow-lg: 0 12px 40px rgba(0, 0, 0, .12);
-            --transition: .25s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        [data-theme="dark"] {
-            --bg-main: #18191a;
-            --bg-card: #242526;
-            --bg-input: #3a3b3c;
-            --bg-button-hover: #4e4f50;
-            --text-main: #e4e6eb;
-            --text-secondary: #b0b3b8;
-            --text-muted: #888888;
-            --border-color: #3a3b3c;
-            --accent-brand-light: #263951;
-        }
-
-        body {
-            background: var(--bg-main);
-            color: var(--text-main);
-            overflow-x: hidden;
-            padding-top: 80px;
-            padding-bottom: 95px;
-            transition: background var(--transition), color var(--transition);
-        }
-
-        /* سكرول بار أنيق */
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: var(--text-muted);
-            border-radius: var(--radius-round);
-        }
-
-        /* ==========================================================================
-           2. عناصر الواجهة الرئيسية (Header & Bottom Nav)
-           ========================================================================== */
-        header {
-            position: fixed;
-            top: 0; right: 0; left: 0;
-            height: 70px;
-            background: var(--bg-card);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 20px;
-            border-bottom: 1px solid var(--border-color);
-            z-index: 999;
-            box-shadow: var(--shadow-subtle);
-            transition: background var(--transition);
-        }
-
-        .header-logo {
-            font-size: 30px;
-            font-weight: 900;
-            color: var(--accent-brand);
-            text-decoration: none;
-            letter-spacing: -0.5px;
-        }
-
-        .header-actions-cluster {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .circle-icon-btn {
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            border: none;
-            cursor: pointer;
-            background: var(--bg-input);
-            font-size: 18px;
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .circle-icon-btn:hover {
-            background: var(--bg-button-hover);
-            transform: scale(1.05);
-        }
-
-        .header-avatar {
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            cursor: pointer;
-            object-fit: cover;
-            border: 2px solid var(--accent-brand);
-            transition: var(--transition);
-        }
-
-        .bottom-nav {
-            position: fixed;
-            bottom: 0; right: 0; left: 0;
-            height: 75px;
-            background: var(--bg-card);
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            border-top: 1px solid var(--border-color);
-            z-index: 999;
-            box-shadow: 0 -4px 10px rgba(0,0,0,0.03);
-            transition: background var(--transition);
-        }
-
-        .bottom-nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-            font-size: 13px;
-            cursor: pointer;
-            color: var(--text-secondary);
-            font-weight: 700;
-            transition: var(--transition);
-            flex: 1;
-            padding: 8px 0;
-        }
-
-        .bottom-nav-item.active {
-            color: var(--accent-brand);
-            transform: translateY(-2px);
-        }
-
-        .nav-icon {
-            font-size: 24px;
-        }
-
-        .container {
-            width: min(680px, 95%);
-            margin: auto;
-        }
-
-        /* Panels Control */
-        .app-view-panel {
-            display: none;
-            animation: panelFadeIn .3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .app-view-panel.active-panel {
-            display: block;
-        }
-
-        @keyframes panelFadeIn {
-            from { opacity: 0; transform: translateY(15px); }
-            to { opacity: 1; transform: none; }
-        }
-
-        /* ==========================================================================
-           3. شاشات المصادقة (تسجيل الدخول / حساب جديد)
-           ========================================================================== */
-        .auth-overlay-screen {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: var(--bg-main);
-            z-index: 9999;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .auth-box-card {
-            background: var(--bg-card);
-            padding: 35px 25px;
-            border-radius: var(--radius-md);
-            box-shadow: var(--shadow-lg);
-            width: min(440px, 92%);
-            text-align: center;
-            border: 1px solid var(--border-color);
-        }
-
-        .logo-title { font-size: 36px; color: var(--accent-brand); font-weight: 900; margin-bottom: 4px; }
-        .logo-subtitle { color: var(--text-secondary); margin-bottom: 25px; font-size: 15px; }
-        .auth-nav-tabs { display: flex; gap: 8px; margin-bottom: 25px; background: var(--bg-input); padding: 5px; border-radius: var(--radius-sm); }
-        .auth-tab-btn { flex: 1; padding: 12px; border: none; background: transparent; cursor: pointer; font-weight: bold; border-radius: var(--radius-sm); color: var(--text-secondary); transition: var(--transition); }
-        .auth-tab-btn.active-tab { background: var(--bg-card); color: var(--accent-brand); box-shadow: var(--shadow-subtle); }
-        .auth-inputs-form { display: flex; flex-direction: column; gap: 14px; }
-        .auth-inputs-form input { padding: 14px; border: 1px solid var(--border-color); background: var(--bg-input); color: var(--text-main); border-radius: var(--radius-sm); outline: none; font-size: 15px; transition: var(--transition); }
-        .auth-inputs-form input:focus { border-color: var(--accent-brand); background: var(--bg-card); }
-        
-        .btn-action-primary { background: var(--accent-brand); color: white; border: none; padding: 14px; border-radius: var(--radius-sm); font-weight: 700; font-size: 16px; cursor: pointer; transition: var(--transition); box-shadow: 0 4px 10px rgba(24, 119, 242, 0.2); }
-        .btn-action-primary:hover { opacity: 0.95; transform: translateY(-1px); }
-
-        /* ==========================================================================
-           4. واجهات كتابة ونشر المحتوى والملاحظات (Notes & Composer)
-           ========================================================================== */
-        .add-note-inline-bar { display: flex; gap: 10px; margin-bottom: 20px; align-items: center; }
-        .add-note-inline-bar input { flex: 1; padding: 12px 16px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); border-radius: var(--radius-lg); outline: none; font-size: 14px; }
-        .add-note-inline-bar input:focus { border-color: var(--accent-brand); }
-        .notes-horizontal-scroller { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 12px; scroll-behavior: smooth; }
-        .note-card { background: var(--accent-brand-light); color: var(--text-main); padding: 14px; border-radius: var(--radius-md); min-width: 140px; max-width: 140px; text-align: center; font-size: 13px; box-shadow: var(--shadow-subtle); flex-shrink: 0; }
-        .note-card b { display: block; color: var(--accent-brand); margin-bottom: 4px; text-overflow: ellipsis; overflow: hidden; }
-
-        .create-post-card { background: var(--bg-card); padding: 20px; border-radius: var(--radius-md); box-shadow: var(--shadow-subtle); margin-bottom: 25px; border: 1px solid var(--border-color); }
-        .create-post-input-area { display: flex; gap: 12px; margin-bottom: 15px; }
-        .create-post-creator-avatar { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; }
-        .create-post-input-area textarea { flex: 1; border: none; resize: none; background: transparent; color: var(--text-main); outline: none; padding-top: 8px; height: 75px; font-size: 16px; }
-        
-        /* ميزة معاينة الـ Media قبل الرفع */
-        .upload-preview-wrapper { display: none; position: relative; margin-bottom: 15px; border-radius: var(--radius-sm); overflow: hidden; border: 1px solid var(--border-color); background: #000; }
-        .upload-preview-wrapper video, .upload-preview-wrapper img { width: 100%; max-height: 250px; object-fit: contain; display: block; }
-        .clear-preview-btn { position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.6); color: white; border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; z-index: 5; }
-
-        .create-post-action-row { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 15px; }
-        .media-upload-custom-label { cursor: pointer; color: var(--accent-brand); font-weight: 600; font-size: 14px; display: flex; align-items: center; gap: 6px; padding: 8px 12px; border-radius: var(--radius-sm); transition: var(--transition); }
-        .media-upload-custom-label:hover { background: var(--accent-brand-light); }
-
-        /* ==========================================================================
-           5. خلاصة المنشورات والريلز (Feed Post Node & Reels Stream)
-           ========================================================================== */
-        .feed-post-node-card { background: var(--bg-card); padding: 20px; border-radius: var(--radius-md); margin-bottom: 20px; border: 1px solid var(--border-color); box-shadow: var(--shadow-subtle); }
-        .post-header-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-        .post-author-info { display: flex; align-items: center; gap: 10px; }
-        .post-author-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
-        .post-author-name { font-weight: 700; color: var(--text-main); }
-        .post-time-stamp { font-size: 12px; color: var(--text-muted); display: block; }
-        .post-main-contents { font-size: 15px; line-height: 1.6; margin-bottom: 15px; white-space: pre-wrap; color: var(--text-main); }
-        
-        .post-rendered-media-box { border-radius: var(--radius-sm); overflow: hidden; margin-bottom: 15px; border: 1px solid var(--border-color); background: var(--bg-input); }
-        .post-rendered-media-box img, .post-rendered-media-box video { width: 100%; max-height: 400px; object-fit: cover; display: block; cursor: pointer; }
-        
-        .post-interactive-actions-bar { display: flex; gap: 24px; border-top: 1px solid var(--border-color); padding-top: 12px; font-size: 14px; font-weight: 600; color: var(--text-secondary); }
-        .action-trigger-node { display: flex; align-items: center; gap: 6px; cursor: pointer; transition: var(--transition); padding: 4px 8px; border-radius: var(--radius-sm); }
-        .action-trigger-node:hover { background: var(--bg-input); color: var(--accent-brand); }
-
-        /* واجهة ريلز بملء الشاشة المخصصة */
-        .reels-vertical-stream { display: flex; flex-direction: column; gap: 25px; align-items: center; width: 100%; }
-        .reel-card { background: #000; width: 100%; max-width: 380px; height: calc(100vh - 210px); border-radius: var(--radius-md); position: relative; overflow: hidden; box-shadow: var(--shadow-lg); }
-        .reel-video { width: 100%; height: 100%; object-fit: cover; }
-        .reel-info { position: absolute; bottom: 0; right: 0; left: 0; padding: 25px 20px; background: linear-gradient(transparent, rgba(0,0,0,0.85)); color: white; z-index: 10; }
-        .reel-info b { font-size: 16px; margin-bottom: 4px; display: block; }
-        .reel-info p { font-size: 14px; opacity: 0.9; }
-
-        /* ==========================================================================
-           6. الإشعارات المنبثقة وأوراق التعليقات (Toast & Comments Bottom Sheet)
-           ========================================================================== */
-        #system-notification-toast { position: fixed; bottom: 95px; left: 50%; transform: translateX(-50%) translateY(120px); background: #2b2b2b; color: white; padding: 14px 28px; border-radius: var(--radius-lg); z-index: 99999; display: flex; align-items: center; gap: 10px; transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s; opacity: 0; pointer-events: none; box-shadow: var(--shadow-lg); font-weight: 600; font-size: 14px; }
-        #system-notification-toast.toast-state-visible { transform: translateX(-50%) translateY(0); opacity: 1; }
-
-        .modal-sheet-backdrop { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; display: none; backdrop-filter: blur(4px); }
-        .modal-sheet-backdrop.backdrop-state-visible { display: block; }
-        .comments-bottom-sheet-frame { position: fixed; bottom: 0; left: 0; right: 0; height: 75vh; background: var(--bg-card); border-radius: var(--radius-lg) var(--radius-lg) 0 0; z-index: 1001; transform: translateY(100%); transition: transform .35s cubic-bezier(0.1, 0.76, 0.55, 0.94); padding: 24px; display: flex; flex-direction: column; box-shadow: 0 -10px 30px rgba(0,0,0,0.15); }
-        .comments-bottom-sheet-frame.sheet-state-open { transform: translateY(0); }
-        
-        .sheet-structural-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color); }
-        .sheet-header-title-text { font-weight: 800; font-size: 18px; }
-        .sheet-scrollable-comments-area { flex: 1; overflow-y: auto; margin-bottom: 15px; }
-        
-        .comment-node { padding: 12px; background: var(--bg-input); border-radius: var(--radius-sm); margin-bottom: 12px; display: flex; flex-direction: column; gap: 4px; }
-        .comment-node b { color: var(--accent-brand); font-size: 14px; }
-        .comment-node p { font-size: 14px; color: var(--text-main); }
-
-        .sheet-interactive-footer-input-panel { display: flex; gap: 10px; padding-top: 10px; }
-        .sheet-interactive-footer-input-panel input { flex: 1; padding: 14px; border: 1px solid var(--border-color); background: var(--bg-input); color: var(--text-main); border-radius: var(--radius-sm); outline: none; }
-        
-        .media-lightbox-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.95); z-index: 10000; display: none; align-items: center; justify-content: center; }
-        
-        #floating-create-post-btn { position: fixed; bottom: 95px; left: 24px; width: 56px; height: 56px; background: var(--accent-brand); color: white; border: none; border-radius: 50%; font-size: 30px; cursor: pointer; box-shadow: var(--shadow-lg); z-index: 99; display: flex; align-items: center; justify-content: center; transition: var(--transition); }
-        #floating-create-post-btn:hover { transform: rotate(90deg) scale(1.05); }
-        
-        .search-container-box { margin-bottom: 20px; }
-        .search-input-frame { display: flex; align-items: center; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 6px 16px; box-shadow: var(--shadow-subtle); }
-        .search-input-frame input { border: none; background: transparent; color: var(--text-main); outline: none; width: 100%; padding: 8px; font-size: 15px; }
-    </style>
+    <title>Friends - Connect & Share</title>
+    <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
 
-<div id="application-auth-overlay" class="auth-overlay-screen">
-    <div class="auth-box-card">
-        <h1 class="logo-title">Friends</h1>
-        <p class="logo-subtitle">تواصل، شارك، واستمتع بوقتك مع أصدقائك</p>
-
-        <div class="auth-nav-tabs">
-            <button id="tab-login-btn" class="auth-tab-btn active-tab" onclick="toggleAuthFormsUX('login')">تسجيل الدخول</button>
-            <button id="tab-register-btn" class="auth-tab-btn" onclick="toggleAuthFormsUX('register')">حساب جديد</button>
+    <header class="main-header">
+        <a href="#" class="app-logo">Friends</a>
+        
+        <div class="header-left">
+            <button class="circle-btn" id="noti-btn">
+                🔔
+                <span class="badge">3</span>
+            </button>
+            <img src="https://via.placeholder.com/150" alt="User Profile" class="nav-avatar" id="nav-profile-img">
         </div>
+    </header>
 
-        <div id="app-login-form-node" class="auth-inputs-form">
-            <input type="text" id="auth-login-username" placeholder="اسم المستخدم">
-            <input type="password" id="auth-login-password" placeholder="كلمة المرور">
-            <button class="btn-action-primary" onclick="manualLogin()">تسجيل الدخول الآن</button>
-        </div>
+    <main class="app-container">
+        
+        <section class="search-section">
+            <div class="search-bar-wrapper">
+                <input type="text" id="search-input" placeholder="Search friends, posts, hashtags...">
+                <div class="search-results-box" id="search-results" style="display: none;">
+                    </div>
+            </div>
+        </section>
 
-        <form id="app-register-form-node" class="auth-inputs-form" style="display:none" onsubmit="manualRegister(event)">
-            <input type="text" id="auth-reg-username" placeholder="اختر اسم مستخدم فريد" required>
-            <input type="email" id="auth-reg-email" placeholder="البريد الإلكتروني الحقيقي" required>
-            <input type="password" id="auth-reg-password" placeholder="كلمة المرور الآمنة" required>
-            <button class="btn-action-primary" type="submit">تأكيد وإنشاء الحساب</button>
-        </form>
-    </div>
-</div>
+        <section class="notes-wrapper">
+            <div class="add-note-inline">
+                <input type="text" id="note-input" placeholder="Share a thought... (60 letters)">
+                <button class="btn-primary" id="share-note-btn">Note</button>
+            </div>
+            <div class="notes-scroller" id="notes-container">
+                <div class="note-bubble-item">
+                    <div class="note-text-cloud">Listening to music..</div>
+                    <img src="https://via.placeholder.com/150" alt="User" class="note-avatar">
+                </div>
+                </div>
+        </section>
 
-<div id="system-notification-toast">
-    <span id="toast-icon-holder">✨</span>
-    <span id="toast-message-holder">جاري المعالجة...</span>
-</div>
-
-<div class="media-lightbox-overlay" id="global-media-lightbox" onclick="this.style.display='none'">
-    <div id="lightbox-mount-point"></div>
-</div>
-
-<div class="modal-sheet-backdrop" id="comments-modal-backdrop" onclick="closeGlobalCommentsBottomSheet()"></div>
-
-<div class="comments-bottom-sheet-frame" id="global-comments-sheet-container">
-    <div class="sheet-structural-header">
-        <div id="comments-panel-counter-title" class="sheet-header-title-text">التعليقات (0)</div>
-        <span class="sheet-dismiss-close-x" style="cursor:pointer; font-size: 20px; font-weight: bold;" onclick="closeGlobalCommentsBottomSheet()">✕</span>
-    </div>
-    <div id="comments-rendering-wall-mount" class="sheet-scrollable-comments-area"></div>
-    <div id="comments-action-footer-zone" class="sheet-interactive-footer-input-panel"></div>
-</div>
-
-<header>
-    <a href="#" class="header-logo" onclick="switchAppTab('home')">Friends</a>
-    <div class="header-actions-cluster">
-        <button id="app-theme-switcher-btn" class="circle-icon-btn" onclick="toggleApplicationThemeUX()">🌓</button>
-        <button id="app-logout-trigger-btn" class="circle-icon-btn" onclick="logout()">🚪</button>
-        <img id="header-profile-avatar-node" class="header-avatar" src="https://img.icons8.com/fluency/96/user-male-circle.png" onclick="switchAppTab('profile')">
-    </div>
-</header>
-
-<nav class="bottom-nav">
-    <div id="nav-tab-home-trigger" class="bottom-nav-item active" onclick="switchAppTab('home')">
-        <span class="nav-icon">🏠</span><span>الرئيسية</span>
-    </div>
-    <div id="nav-tab-explore-trigger" class="bottom-nav-item" onclick="switchAppTab('explore')">
-        <span class="nav-icon">🔍</span><span>استكشاف</span>
-    </div>
-    <div id="nav-tab-reels-trigger" class="bottom-nav-item" onclick="switchAppTab('reels')">
-        <span class="nav-icon">🎬</span><span>ريلز</span>
-    </div>
-    <div id="nav-tab-chat-trigger" class="bottom-nav-item" onclick="switchAppTab('chat')">
-        <span class="nav-icon">💬</span><span>رسائل</span>
-    </div>
-    <div id="nav-tab-profile-trigger" class="bottom-nav-item" onclick="switchAppTab('profile')">
-        <span class="nav-icon">👤</span><span>حسابي</span>
-    </div>
-</nav>
-
-<div class="container">
-
-    <div id="global-search-container-wrapper" class="search-container-box" style="display:none">
-        <div class="search-input-frame">
-            <span>🔍</span>
-            <input id="app-content-search-field" type="text" placeholder="ابحث عن أفكار، منشورات، أو صناع محتوى...">
-        </div>
-    </div>
-
-    <div id="view-panel-home" class="app-view-panel active-panel">
-        <div class="add-note-inline-bar">
-            <input id="note-text-input-element" type="text" maxlength="60" placeholder="اترك ملاحظة عابرة يراها الجميع...">
-            <button class="btn-action-primary" style="padding: 10px 20px; font-size:14px; border-radius:var(--radius-lg);" onclick="addNewNote()">نشر</button>
-        </div>
-        <div class="notes-section-container">
-            <div id="notes-wall-mount-point" class="notes-horizontal-scroller"></div>
-        </div>
-
-        <div class="create-post-card">
-            <div class="create-post-input-area">
-                <img class="create-post-creator-avatar" src="https://img.icons8.com/fluency/96/user-male-circle.png">
-                <textarea id="create-post-textarea-field" placeholder="بماذا تفكر اليوم يا صديقي؟ شاركنا أفكارك..."></textarea>
+        <section class="create-post-box">
+            <div class="post-input-row">
+                <img src="https://via.placeholder.com/150" alt="My Avatar" class="user-avatar">
+                <textarea id="post-textarea" placeholder="What's on your mind?"></textarea>
             </div>
             
-            <div id="post-media-preview-container-box" class="upload-preview-wrapper">
-                <button class="clear-preview-btn" onclick="clearStagedMediaUX()">✕</button>
-                <div id="post-media-preview-canvas"></div>
+            <div class="preview-zone" id="media-preview-box" style="display: none;">
+                <button class="close-preview" id="cancel-media-btn">&times;</button>
+                <img src="" id="preview-img-element" alt="Preview">
             </div>
 
-            <div class="create-post-action-row">
-                <label for="post-media-file-native-input" class="media-upload-custom-label">
-                    📷 <span>صورة أو فيديو</span>
+            <div class="post-actions-row">
+                <label for="media-upload" class="upload-label">
+                    🖼️ Photo / Video
+                    <input type="file" id="media-upload" accept="image/*,video/*" style="display: none;">
                 </label>
-                <input id="post-media-file-native-input" type="file" accept="image/*,video/*" style="display:none;" onchange="handleMediaSelectionUX(this)">
-                
-                <button id="publish-new-post-final-btn" class="btn-action-primary" style="padding: 10px 24px;" onclick="publishAdvancedPostStream()">نشر المحتوى</button>
+                <button class="btn-primary" id="publish-post-btn">Publish</button>
             </div>
-        </div>
+        </section>
 
-        <div id="timeline-posts-feed-stream"></div>
-    </div>
-
-    <div id="view-panel-explore" class="app-view-panel">
-        <div style="text-align:center; padding:40px 20px; color:var(--text-secondary);">
-            <div style="font-size: 48px; margin-bottom: 10px;">✨</div>
-            <h3>اكتشف آفاقاً جديدة</h3>
-            <p>اكتب في شريط البحث بالأعلى لتصفية المنشورات والمبدعين فورياً.</p>
-        </div>
-    </div>
-
-    <div id="view-panel-reels" class="app-view-panel">
-        <div id="reels-isolated-stream-mount" class="reels-vertical-stream"></div>
-    </div>
-
-    <div id="view-panel-chat" class="app-view-panel">
-        <div style="text-align:center; padding:50px 20px; background: var(--bg-card); border-radius: var(--radius-md); border:1px solid var(--border-color)">
-            <div style="font-size: 50px; margin-bottom: 15px;">💬</div>
-            <h3>صندوق المحادثات المباشرة</h3>
-            <p style="color: var(--text-secondary); margin-top: 5px;">قريباً! نظام مراسلة فوري مشفر وحي بالكامل بين الحسابات.</p>
-        </div>
-    </div>
-
-    <div id="view-panel-profile" class="app-view-panel">
-        <div style="text-align:center; padding:35px 20px; background:var(--bg-card); border-radius:var(--radius-md); border:1px solid var(--border-color); box-shadow: var(--shadow-subtle);">
-            <img id="profile-view-avatar" src="https://img.icons8.com/fluency/96/user-male-circle.png" style="width:110px; height:110px; border-radius:50%; object-fit: cover; border: 3px solid var(--accent-brand);">
-            <h2 id="profile-view-username" style="margin-top:15px; font-weight: 800;">@username</h2>
-            <div style="margin: 15px auto; width: 60px; height: 3px; background: var(--accent-brand); border-radius: 2px;"></div>
-            <p style="color:var(--text-secondary); max-width: 400px; margin: auto; font-size: 14px;">مرحباً بك في صفحتك الشخصية الخاصة. هنا يمكنك إدارة ومتابعة نشاطك على المنصة.</p>
-        </div>
-    </div>
-
-</div>
-
-<button id="floating-create-post-btn" onclick="triggerQuickTextPostUX()">+</button>
-
-<script>
-    // تهيئة إعدادات الاتصال بقاعدة بيانات Firebase
-    const firebaseConfig = {
-        apiKey: "AIzaSyA5SS9zdzj5N8oBMmjPgWvfSohdSBIRQ8c",
-        authDomain: "friends7777.firebaseapp.com",
-        projectId: "friends7777",
-        storageBucket: "friends7777.appspot.com",
-        messagingSenderId: "276918882465",
-        appId: "1:276918882465:web:f4c3c2df36295a71968560"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-    const storage = firebase.storage();
-
-    // متغيرات الحالة العامة للنظام والـ App Context
-    let currentUser = localStorage.getItem("logged_user") || "";
-    let globalPostsCache = [];
-    let globalUsersProfileMap = {};
-    let activeAppTabContext = "home";
-    let stagedFileObjectForUpload = null;
-
-    // استماع عند اكتمال تحميل عناصر الـ DOM بالمتصفح
-    window.addEventListener("DOMContentLoaded", () => {
-        initializeApplicationThemeContext();
-        
-        if (currentUser) {
-            document.getElementById("application-auth-overlay").style.display = "none";
-            document.getElementById("profile-view-username").innerText = "@" + currentUser;
-            performApplicationDataBootstrap();
-        } else {
-            document.getElementById("application-auth-overlay").style.display = "flex";
-        }
-    });
-
-    function initializeApplicationThemeContext() {
-        const savedTheme = localStorage.getItem("theme") || "light";
-        if (savedTheme === "dark") {
-            document.documentElement.setAttribute("data-theme", "dark");
-        }
-    }
-
-    function toggleApplicationThemeUX() {
-        const theme = document.documentElement.getAttribute("data-theme");
-        if (theme === "dark") {
-            document.documentElement.removeAttribute("data-theme");
-            localStorage.setItem("theme", "light");
-        } else {
-            document.documentElement.setAttribute("data-theme", "dark");
-            localStorage.setItem("theme", "dark");
-        }
-    }
-
-    function toggleAuthFormsUX(mode) {
-        const loginForm = document.getElementById("app-login-form-node");
-        const regForm = document.getElementById("app-register-form-node");
-        const loginTab = document.getElementById("tab-login-btn");
-        const regTab = document.getElementById("tab-register-btn");
-
-        if (mode === 'login') {
-            loginForm.style.display = "flex";
-            regForm.style.display = "none";
-            loginTab.classList.add("active-tab");
-            regTab.classList.remove("active-tab");
-        } else {
-            loginForm.style.display = "none";
-            regForm.style.display = "flex";
-            loginTab.classList.remove("active-tab");
-            regTab.classList.add("active-tab");
-        }
-    }
-
-    function displaySystemToast(message) {
-        const toast = document.getElementById("system-notification-toast");
-        document.getElementById("toast-message-holder").innerText = message;
-        toast.classList.add("toast-state-visible");
-        setTimeout(() => {
-            toast.classList.remove("toast-state-visible");
-        }, 3200);
-    }
-
-    // التنقل الديناميكي الفوري بين الأقسام الـ 5 (Single Page App Navigation)
-    function switchAppTab(tabName) {
-        activeAppTabContext = tabName;
-        
-        document.querySelectorAll(".bottom-nav-item").forEach(item => item.classList.remove("active"));
-        const activeNavTrigger = document.getElementById(`nav-tab-${tabName}-trigger`);
-        if(activeNavTrigger) activeNavTrigger.classList.add("active");
-
-        document.querySelectorAll(".app-view-panel").forEach(panel => panel.classList.remove("active-panel"));
-        const targetPanel = document.getElementById(`view-panel-${tabName}`);
-        if(targetPanel) targetPanel.classList.add("active-panel");
-
-        // شريط البحث الموحد يفتح فقط في صفحة الاستكشاف أو البحث
-        const searchBar = document.getElementById("global-search-container-wrapper");
-        if (tabName === "explore") {
-            searchBar.style.display = "block";
-            renderTimelinePostsFeed(globalPostsCache); // إظهار البوستات للاستكشاف
-        } else {
-            searchBar.style.display = "none";
-        }
-
-        // تحفيز عارض الريلز التلقائي والذكي
-        if (tabName === "reels") {
-            renderIsolatedReelsStream();
-        }
-    }
-
-    // بناء خريطة وجلب بيانات المستخدمين بشكل متزامن
-    async function performApplicationDataBootstrap() {
-        try {
-            const usersSnapshot = await db.collection("users").get();
-            globalUsersProfileMap = {};
-            usersSnapshot.forEach(doc => {
-                const data = doc.data();
-                globalUsersProfileMap[data.username] = data.avatar || "https://img.icons8.com/fluency/96/user-male-circle.png";
-            });
-
-            await loadInitialPosts();
-            await synchronizeInlineNotesWithCloud();
-        } catch (err) {
-            console.error("Bootstrap Core Failure:", err);
-        }
-    }
-
-    async function loadInitialPosts() {
-        try {
-            const snap = await db.collection("posts").orderBy("timestamp", "desc").limit(20).get();
-            globalPostsCache = [];
-            snap.forEach(doc => {
-                globalPostsCache.push({ id: doc.id, ...doc.data() });
-            });
-            renderTimelinePostsFeed(globalPostsCache);
-        } catch (err) {
-            console.error(err);
-        }
-    }
-
-    // محرك رندرة وبناء عناصر واجهة التايملاين مع دعم متطور للصور والفيديوهات والتعليقات
-    function renderTimelinePostsFeed(posts) {
-        const container = document.getElementById("timeline-posts-feed-stream");
-        if(!container) return;
-        container.innerHTML = "";
-
-        if(posts.length === 0) {
-            container.innerHTML = `<p style="text-align:center; padding:30px; color:var(--text-secondary);">لا يوجد محتوى متاح للمعاينة حالياً.</p>`;
-            return;
-        }
-
-        posts.forEach(post => {
-            const div = document.createElement("div");
-            div.className = "feed-post-node-card";
+        <section id="feed-timeline-container">
             
-            const commentsCount = post.comments ? post.comments.length : 0;
-            const likedByArray = post.likedBy || [];
-            const hasLiked = likedByArray.includes(currentUser) ? "❤️" : "🤍";
-
-            // فحص وجود ميديا مرفوعة (صورة أو فيديو)
-            let mediaMarkup = "";
-            if (post.media) {
-                if (post.mediaType === "video") {
-                    mediaMarkup = `
-                        <div class="post-rendered-media-box">
-                            <video src="${post.media}" controls preload="metadata"></video>
-                        </div>`;
-                } else {
-                    mediaMarkup = `
-                        <div class="post-rendered-media-box" onclick="launchLightboxUX('${post.media}')">
-                            <img src="${post.media}" alt="Post Image">
-                        </div>`;
-                }
-            }
-
-            div.innerHTML = `
-                <div class="post-header-meta">
-                    <div class="post-author-info">
-                        <img class="post-author-avatar" src="${globalUsersProfileMap[post.author] || 'https://img.icons8.com/fluency/96/user-male-circle.png'}">
-                        <div>
-                            <span class="post-author-name">@${post.author}</span>
-                            <span class="post-time-stamp">منذ قليل</span>
+            <article class="feed-card">
+                <div class="card-header">
+                    <div class="card-user-info">
+                        <img src="https://via.placeholder.com/150" alt="Author" class="user-avatar">
+                        <div class="post-meta">
+                            <h4>John Doe</h4>
+                            <span>2 hours ago</span>
                         </div>
                     </div>
+                    <button class="follow-btn-inline">Follow</button>
                 </div>
-                <div class="post-main-contents">${post.content}</div>
-                ${mediaMarkup}
-                <div class="post-interactive-actions-bar">
-                    <div class="action-trigger-node" onclick="executeLikeTransaction('${post.id}', ${JSON.stringify(likedByArray).replace(/"/g, '&quot;')})">
-                        <span>${hasLiked}</span><span>${likedByArray.length} تفاعل</span>
-                    </div>
-                    <div class="action-trigger-node" onclick="openCommentsBottomSheetComponent('${post.id}', ${JSON.stringify(post.comments || []).replace(/"/g, '&quot;')})">
-                        <span>💬</span><span>${commentsCount} تعليق</span>
-                    </div>
-                </div>
-            `;
-            container.appendChild(div);
-        });
-    }
-
-    // إدارة نظام الملاحظات اللحظية الملونة بالأعلى
-    async function synchronizeInlineNotesWithCloud() {
-        const container = document.getElementById("notes-wall-mount-point");
-        if (!container) return;
-        container.innerHTML = "";
-
-        try {
-            const snap = await db.collection("notes").limit(8).get();
-            let notes = [];
-            snap.forEach(doc => { notes.push({ id: doc.id, ...doc.data() }); });
-            notes.sort((a, b) => b.timestamp - a.timestamp);
-
-            notes.forEach(note => {
-                const div = document.createElement("div");
-                div.className = "note-card";
-                div.innerHTML = `<b>@${note.user}</b><p>${note.text}</p>`;
-                container.appendChild(div);
-            });
-        } catch (e) { console.error(e); }
-    }
-
-    async function addNewNote() {
-        const input = document.getElementById("note-text-input-element");
-        const text = input.value.trim();
-        if (!text) return;
-
-        await db.collection("notes").add({
-            user: currentUser,
-            text: text,
-            timestamp: Date.now()
-        });
-        input.value = "";
-        displaySystemToast("تمت إضافة ملاحظتك السريعة بنجاح");
-        synchronizeInlineNotesWithCloud();
-    }
-
-    // التعامل الذكي مع اختيار الميديا وعمل Preview للمستخدم قبل الرفع الفعلي لضمان الـ UX
-    function handleMediaSelectionUX(input) {
-        const file = input.files[0];
-        if (!file) return;
-
-        stagedFileObjectForUpload = file;
-        const previewBox = document.getElementById("post-media-preview-container-box");
-        const canvas = document.getElementById("post-media-preview-canvas");
-        
-        canvas.innerHTML = "";
-        previewBox.style.display = "block";
-
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            if (file.type.startsWith("video/")) {
-                const video = document.createElement("video");
-                video.src = e.target.result;
-                video.muted = true;
-                video.autoplay = true;
-                video.controls = true;
-                canvas.appendChild(video);
-            } else {
-                const img = document.createElement("img");
-                img.src = e.target.result;
-                canvas.appendChild(img);
-            }
-        };
-        reader.readAsDataURL(file);
-    }
-
-    function clearStagedMediaUX() {
-        stagedFileObjectForUpload = null;
-        document.getElementById("post-media-preview-container-box").style.display = "none";
-        document.getElementById("post-media-file-native-input").value = "";
-    }
-
-    // نشر المنشورات المتقدمة وصور وفيديوهات برفع مباشر على الـ Storage والـ Firestore
-    async function publishAdvancedPostStream() {
-        const textElement = document.getElementById("create-post-textarea-field");
-        const text = textElement.value.trim();
-        
-        if (!text && !stagedFileObjectForUpload) {
-            displaySystemToast("لا يمكنك نشر بوست فارغ!");
-            return;
-        }
-
-        const publishBtn = document.getElementById("publish-new-post-final-btn");
-        publishBtn.innerText = "جاري الرفع والنشر...";
-        publishBtn.disabled = true;
-
-        let uploadedMediaUrl = null;
-        let detectedMediaType = null;
-
-        try {
-            if (stagedFileObjectForUpload) {
-                detectedMediaType = stagedFileObjectForUpload.type.startsWith("video/") ? "video" : "image";
                 
-                const storageRef = storage.ref().child("posts/" + Date.now() + "_" + stagedFileObjectForUpload.name);
-                const snapshot = await storageRef.put(stagedFileObjectForUpload);
-                uploadedMediaUrl = await snapshot.ref.getDownloadURL();
-            }
-
-            await db.collection("posts").add({
-                author: currentUser,
-                content: text,
-                media: uploadedMediaUrl,
-                mediaType: detectedMediaType,
-                timestamp: Date.now(),
-                likedBy: [],
-                comments: []
-            });
-
-            textElement.value = "";
-            clearStagedMediaUX();
-            displaySystemToast("تهانينا! تم نشر منشورك بنجاح ✨");
-            await loadInitialPosts();
-        } catch (error) {
-            console.error("Publishing Failure:", error);
-            displaySystemToast("حدث خطأ أثناء محاولة رفع المنشور");
-        } finally {
-            publishBtn.innerText = "نشر المنشور";
-            publishBtn.disabled = false;
-        }
-    }
-
-    function triggerQuickTextPostUX() {
-        const text = prompt("اكتب منشورك السريع والمباشر:");
-        if (!text || !text.trim()) return;
-
-        db.collection("posts").add({
-            author: currentUser,
-            content: text.trim(),
-            timestamp: Date.now(),
-            likedBy: [],
-            comments: []
-        }).then(() => {
-            displaySystemToast("تم النشر السريع بنجاح!");
-            loadInitialPosts();
-        });
-    }
-
-    // إدارة عمليات التفاعل اللحظي (Like/Unlike)
-    async function executeLikeTransaction(postId, currentLikes) {
-        let updatedLikes = [...(currentLikes || [])];
-        if (updatedLikes.includes(currentUser)) {
-            updatedLikes = updatedLikes.filter(u => u !== currentUser);
-        } else {
-            updatedLikes.push(currentUser);
-        }
-
-        await db.collection("posts").doc(postId).update({ likedBy: updatedLikes });
-        loadInitialPosts();
-    }
-
-    // بناء وإدارة لوحة التعليقات المنبثقة الذكية (Bottom Sheet View)
-    function openCommentsBottomSheetComponent(postId, comments) {
-        activeCommentPostId = postId;
-        const sheet = document.getElementById("global-comments-sheet-container");
-        const backdrop = document.getElementById("comments-modal-backdrop");
-        const container = document.getElementById("comments-rendering-wall-mount");
-        const title = document.getElementById("comments-panel-counter-title");
-
-        sheet.classList.add("sheet-state-open");
-        backdrop.classList.add("backdrop-state-visible");
-        title.innerText = `التعليقات (${comments.length})`;
-        container.innerHTML = "";
-
-        if (comments.length === 0) {
-            container.innerHTML = `<div style="text-align:center; padding:30px 10px; color:#777; font-size:14px;">لا توجد تعليقات هنا بعد. كن أول من يترك بصمته!</div>`;
-        } else {
-            comments.forEach(c => {
-                const div = document.createElement("div");
-                div.className = "comment-node";
-                div.innerHTML = `<b>@${c.user}</b><p>${c.text}</p>`;
-                container.appendChild(div);
-            });
-        }
-
-        document.getElementById("comments-action-footer-zone").innerHTML = `
-            <input id="comment-input-field-source" type="text" placeholder="اكتب تعليقاً محترماً الآن...">
-            <button class="btn-action-primary" style="padding:10px 20px; font-size:14px;" onclick="submitCommentPayload()">إرسال</button>
-        `;
-    }
-
-    function closeGlobalCommentsBottomSheet() {
-        document.getElementById("global-comments-sheet-container").classList.remove("sheet-state-open");
-        document.getElementById("comments-modal-backdrop").classList.remove("backdrop-state-visible");
-        activeCommentPostId = null;
-    }
-
-    async function submitCommentPayload() {
-        const input = document.getElementById("comment-input-field-source");
-        const text = input.value.trim();
-        if (!text || !activeCommentPostId) return;
-
-        const postRef = db.collection("posts").doc(activeCommentPostId);
-        const postSnap = await postRef.get();
-        if (!postSnap.exists) return;
-
-        const postData = postSnap.data();
-        const newComments = [...(postData.comments || []), {
-            user: currentUser,
-            text: text,
-            timestamp: Date.now()
-        }];
-
-        await postRef.update({ comments: newComments });
-        input.value = "";
-        closeGlobalCommentsBottomSheet();
-        displaySystemToast("تم إرسال تعليقك وحفظه!");
-        loadInitialPosts();
-    }
-
-    // تفعيل قسم ريلز وعرض الفيديوهات بشكل طولي متطابق مع الـ Tiktok
-    function renderIsolatedReelsStream() {
-        const container = document.getElementById("reels-isolated-stream-mount");
-        if (!container) return;
-        container.innerHTML = "";
-
-        const videos = globalPostsCache.filter(p => p.mediaType === "video");
-
-        if (videos.length === 0) {
-            container.innerHTML = `
-                <div style="text-align:center; padding:50px 20px; color:var(--text-secondary);">
-                    <h3>لا توجد فيديوهات ريلز</h3>
-                    <p style="font-size:13px; margin-top:5px;">قم بنشر منشور جديد يحتوي على فيديو ليظهر في هذا المعرض فوراً.</p>
-                </div>`;
-            return;
-        }
-
-        videos.forEach(video => {
-            const div = document.createElement("div");
-            div.className = "reel-card";
-            div.innerHTML = `
-                <video src="${video.media}" class="reel-video" loop muted playsinline autoplay></video>
-                <div class="reel-info">
-                    <b>@${video.author}</b>
-                    <p>${video.content || ""}</p>
+                <div class="post-body-text">
+                    This is a brand new design for our app! <a href="#" class="hashtag">#Friends2026</a>
                 </div>
-            `;
-            container.appendChild(div);
-        });
-    }
+                
+                <div class="post-media-attachment">
+                    <img src="https://via.placeholder.com/600x400" alt="Post Media" class="lightbox-trigger">
+                </div>
 
-    function launchLightboxUX(url) {
-        const box = document.getElementById("global-media-lightbox");
-        const mount = document.getElementById("lightbox-mount-point");
-        box.style.display = "flex";
-        mount.innerHTML = `<img src="${url}" style="max-width:92%; max-height:85vh; border-radius:var(--radius-sm); box-shadow: var(--shadow-lg);">`;
-    }
+                <div class="card-actions-bar">
+                    <button class="action-btn like-trigger">❤️ <span class="count">12</span></button>
+                    <button class="action-btn comment-trigger">💬 <span>Comment</span></button>
+                    <button class="action-btn save-trigger">🔖 <span>Save</span></button>
+                </div>
+            </article>
 
-    // محرك الفلترة الحية والبحث التفاعلي (Search Filter Logic)
-    document.getElementById("app-content-search-field").addEventListener("input", (e) => {
-        const q = e.target.value.toLowerCase().trim();
-        const filtered = globalPostsCache.filter(p => 
-            (p.content || "").toLowerCase().includes(q) || 
-            (p.author || "").toLowerCase().includes(q)
-        );
-        renderTimelinePostsFeed(filtered);
-    });
+            <div class="shimmer-card" id="shimmer-loading-placeholder" style="display: none;">
+                <div class="shimmer-line line-short"></div>
+                <div class="shimmer-line line-long"></div>
+                <div class="shimmer-line line-long"></div>
+            </div>
 
-    // محرك المصادقة وإدارة الجلسة المحلية (Auth Flow Handlers)
-    async function manualLogin() {
-        const username = document.getElementById("auth-login-username").value.trim().toLowerCase();
-        const password = document.getElementById("auth-login-password").value;
+        </section>
+    </main>
 
-        if (!username || !password) {
-            displaySystemToast("برجاء ملء كافة حقول الدخول");
-            return;
-        }
+    <div class="backdrop" id="comments-backdrop"></div>
+    <div class="bottom-sheet" id="comments-sheet">
+        <div class="sheet-header">
+            <div class="drag-handle"></div>
+            <span class="close-sheet" id="close-comments-btn">&times;</span>
+            <h3>Comments</h3>
+        </div>
+        <div class="sheet-body" id="comments-list-body">
+            <div class="comment-item">
+                <img src="https://via.placeholder.com/150" alt="User" class="user-avatar" style="width:32px; height:32px;">
+                <div class="comment-bubble">
+                    <strong>Alex:</strong> Great feature layout!
+                </div>
+            </div>
+        </div>
+        <div class="sheet-footer">
+            <input type="text" id="new-comment-input" placeholder="Write a comment...">
+            <button class="btn-primary" id="send-comment-btn">Send</button>
+        </div>
+    </div>
 
-        const doc = await db.collection("users").doc(username).get();
-        if (!doc.exists) {
-            displaySystemToast("اسم المستخدم هذا غير مسجل لدينا");
-            return;
-        }
+    <div class="lightbox" id="global-lightbox" style="display: none;">
+        <span class="close-lightbox" id="close-lightbox-btn">&times;</span>
+        <img id="lightbox-img" src="" alt="Full Scale Image">
+    </div>
 
-        if (doc.data().password !== password) {
-            displaySystemToast("كلمة المرور غير مطابقة، حاول مجدداً");
-            return;
-        }
+    <div class="toast" id="app-toast">
+        <span class="toast-icon">✨</span>
+        <span class="toast-text-message">Success Message Here</span>
+    </div>
 
-        currentUser = username;
-        localStorage.setItem("logged_user", username);
-        document.getElementById("application-auth-overlay").style.display = "none";
-        document.getElementById("profile-view-username").innerText = "@" + currentUser;
-        
-        performApplicationDataBootstrap();
-        displaySystemToast("أهلاً بك مجدداً يا صديقي! تم تسجيل دخولك بنجاح");
-    }
+    <nav class="bottom-nav">
+        <a href="#" class="nav-item active" data-target="feed">
+            <span>🏠</span>Home
+        </a>
+        <a href="#" class="nav-item" data-target="chats">
+            <span>💬</span>Chats
+        </a>
+        <a href="#" class="nav-item" data-target="profile">
+            <span>👤</span>Profile
+        </a>
+    </nav>
 
-    async function manualRegister(e) {
-        e.preventDefault();
-        const username = document.getElementById("auth-reg-username").value.trim().toLowerCase();
-        const email = document.getElementById("auth-reg-email").value.trim();
-        const password = document.getElementById("auth-reg-password").value;
-
-        if (!username || !email || !password) return;
-
-        const check = await db.collection("users").doc(username).get();
-        if (check.exists) {
-            displaySystemToast("عذراً، اسم المستخدم محجوز لحساب آخر بالفعل");
-            return;
-        }
-
-        await db.collection("users").doc(username).set({
-            username,
-            email,
-            password,
-            avatar: "https://img.icons8.com/fluency/96/user-male-circle.png",
-            bio: "أنا مستخدم سعيد في تطبيق Friends!"
-        });
-
-        currentUser = username;
-        localStorage.setItem("logged_user", username);
-        document.getElementById("application-auth-overlay").style.display = "none";
-        document.getElementById("profile-view-username").innerText = "@" + currentUser;
-
-        performApplicationDataBootstrap();
-        displaySystemToast("مبارك! تم إنشاء حسابك الجديد وتسجيل دخولك تلقائياً");
-    }
-
-    function logout() {
-        localStorage.removeItem("logged_user");
-        location.reload();
-    }
-</script>
 </body>
 </html>
