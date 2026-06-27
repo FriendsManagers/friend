@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Friends Debug & Live Engine - 2026 Production Edition
+   Friends Ultra-Clean Core UI & Engine - 2026 Production Edition (Firebase Live)
    ========================================================================== */
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
@@ -27,39 +27,43 @@ import {
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-/* ================= FIREBASE CONFIG ================= */
+/* ================= FIREBASE CONFIG (YOUR REAL LIVE CONFIG) ================= */
 const firebaseConfig = {
-  apiKey: "AIzaSyDEU_O_S-v8mE-2OaN6fUX_x0C2fU2g3E",
-  authDomain: "friend-70df5.firebaseapp.com",
-  projectId: "friend-70df5",
-  storageBucket: "friend-70df5.appspot.com",
-  messagingSenderId: "1032587841120",
-  appId: "1:1032587841120:web:86e927f91ef38bb7894a82"
+  apiKey: "AIzaSyA5SS93zdj5N8oBMmjPgWvfSohdSBIRQ8c",
+  authDomain: "friends7777.firebaseapp.com",
+  projectId: "friends7777",
+  storageBucket: "friends7777.firebasestorage.app",
+  messagingSenderId: "276910802465",
+  appId: "1:276910802465:web:f4c3c2df36295a71960560"
 };
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
+/* ================= APP STATE MANAGEMENT ================= */
 let currentUserData = null;
 let activePostIdForComments = null;
 let isSignUpMode = false;
 const DEFAULT_AVATAR = "https://www.gravatar.com/avatar/?d=mp";
 
+/* ================= LIFECYCLE INITIALIZER ================= */
 document.addEventListener("DOMContentLoaded", () => {
   initAuthSystem();
   initStaticUIHandlers();
 });
 
+/* ================= GLOBAL SYSTEMS: TOAST ================= */
 function showToast(message, icon = "✨") {
   const toast = document.getElementById("app-toast");
   if (!toast) return;
   toast.querySelector(".toast-text-message").innerText = message;
   toast.querySelector(".toast-icon").innerText = icon;
   toast.classList.add("show");
-  setTimeout(() => toast.classList.remove("show"), 5000); // زيادة الوقت لقراءة الخطأ
+  setTimeout(() => toast.classList.remove("show"), 4000);
 }
 
+/* ================= CORE UI EVENT INTERFACES ================= */
 function initStaticUIHandlers() {
   const backdrop = document.getElementById("comments-backdrop");
   const sheet = document.getElementById("comments-sheet");
@@ -74,6 +78,7 @@ function initStaticUIHandlers() {
   if (closeComments) closeComments.addEventListener("click", closeSheetFunc);
   if (backdrop) backdrop.addEventListener("click", closeSheetFunc);
 
+  // معالجة نشر البوست لايف
   const publishBtn = document.getElementById("publish-post-btn");
   if (publishBtn) {
     publishBtn.addEventListener("click", async () => {
@@ -101,6 +106,7 @@ function initStaticUIHandlers() {
     });
   }
 
+  // معالجة إرسال الكومنت الحقيقي
   const submitCommentBtn = document.getElementById("submit-comment-btn");
   if (submitCommentBtn) {
     submitCommentBtn.addEventListener("click", async () => {
@@ -120,13 +126,14 @@ function initStaticUIHandlers() {
         input.value = "";
         showToast("تم إضافة تعليقك بالثانية لايف!", "💬");
       } catch (err) {
-        showToast("خطأ بالتعليق: " + err.message, "❌");
+        showToast("حدث خطأ في التعليق.", "❌");
       }
       submitCommentBtn.disabled = false;
     });
   }
 }
 
+/* ================= AUTH ENGINE ================= */
 function initAuthSystem() {
   const overlay = document.getElementById("auth-overlay");
   const switchBtn = document.getElementById("auth-switch-btn");
@@ -159,7 +166,6 @@ function initAuthSystem() {
       submitBtn.disabled = true;
       try {
         if (isSignUpMode) {
-          console.log("جاري محاولة إنشاء الحساب لـ:", email);
           const credential = await createUserWithEmailAndPassword(auth, email, password);
           const profile = {
             uid: credential.user.uid,
@@ -173,13 +179,10 @@ function initAuthSystem() {
           currentUserData = profile;
           showToast("تم تسجيل حسابك الحقيقي بنجاح! 🎉", "✅");
         } else {
-          console.log("جاري محاولة تسجيل الدخول لـ:", email);
           await signInWithEmailAndPassword(auth, email, password);
           showToast("مرحباً بك مجدداً في تايملاين Friends لايف! 🔥", "👋");
         }
       } catch (err) {
-        console.error("خطأ الفايربيز التفصيلي:", err);
-        // هنا هيطبعلك النص الصريح للخطأ عشان نعرف المشكلة فين بالظبط
         showToast("السبب: " + err.message, "❌");
       }
       submitBtn.disabled = false;
@@ -211,13 +214,12 @@ function syncCoreUserInterface() {
   if (textInput) textInput.placeholder = `ماذا يدور في ذهنك اليوم يا ${currentUserData.name}؟`;
 }
 
+/* ================= TIMELINE PIPELINE ================= */
 function listenToIncomingPosts() {
   const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
   onSnapshot(q, (snapshot) => {
     const list = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
     renderLiveTimeline(list);
-  }, (err) => {
-    showToast("خطأ في جلب البيانات: " + err.message, "❌");
   });
 }
 
