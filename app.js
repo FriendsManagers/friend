@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Friends Ultra-Clean Core UI & Engine - 2026 Production Edition (Firebase Live)
+   Friends Debug & Live Engine - 2026 Production Edition
    ========================================================================== */
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
@@ -27,7 +27,7 @@ import {
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-/* ================= FIREBASE CONFIG (LIVE PRODUCTION) ================= */
+/* ================= FIREBASE CONFIG ================= */
 const firebaseConfig = {
   apiKey: "AIzaSyDEU_O_S-v8mE-2OaN6fUX_x0C2fU2g3E",
   authDomain: "friend-70df5.firebaseapp.com",
@@ -41,29 +41,25 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-/* ================= APP STATE MANAGEMENT ================= */
 let currentUserData = null;
 let activePostIdForComments = null;
 let isSignUpMode = false;
 const DEFAULT_AVATAR = "https://www.gravatar.com/avatar/?d=mp";
 
-/* ================= LIFECYCLE INITIALIZER ================= */
 document.addEventListener("DOMContentLoaded", () => {
   initAuthSystem();
   initStaticUIHandlers();
 });
 
-/* ================= GLOBAL SYSTEMS: TOAST ================= */
 function showToast(message, icon = "✨") {
   const toast = document.getElementById("app-toast");
   if (!toast) return;
   toast.querySelector(".toast-text-message").innerText = message;
   toast.querySelector(".toast-icon").innerText = icon;
   toast.classList.add("show");
-  setTimeout(() => toast.classList.remove("show"), 3000);
+  setTimeout(() => toast.classList.remove("show"), 5000); // زيادة الوقت لقراءة الخطأ
 }
 
-/* ================= CORE UI EVENT INTERFACES ================= */
 function initStaticUIHandlers() {
   const backdrop = document.getElementById("comments-backdrop");
   const sheet = document.getElementById("comments-sheet");
@@ -78,7 +74,6 @@ function initStaticUIHandlers() {
   if (closeComments) closeComments.addEventListener("click", closeSheetFunc);
   if (backdrop) backdrop.addEventListener("click", closeSheetFunc);
 
-  // معالجة نشر البوست لايف
   const publishBtn = document.getElementById("publish-post-btn");
   if (publishBtn) {
     publishBtn.addEventListener("click", async () => {
@@ -100,13 +95,12 @@ function initStaticUIHandlers() {
         textarea.value = "";
         showToast("تم نشر منشورك الحقيقي لايف! 🚀", "✅");
       } catch (err) {
-        showToast("فشل النشر، يرجى مراجعة الصلاحيات.", "❌");
+        showToast("فشل النشر: " + err.message, "❌");
       }
       publishBtn.disabled = false;
     });
   }
 
-  // معالجة إرسال الكومنت الحقيقي وتشغيله فورا
   const submitCommentBtn = document.getElementById("submit-comment-btn");
   if (submitCommentBtn) {
     submitCommentBtn.addEventListener("click", async () => {
@@ -126,14 +120,13 @@ function initStaticUIHandlers() {
         input.value = "";
         showToast("تم إضافة تعليقك بالثانية لايف!", "💬");
       } catch (err) {
-        showToast("حدث خطأ أثناء التعليق.", "❌");
+        showToast("خطأ بالتعليق: " + err.message, "❌");
       }
       submitCommentBtn.disabled = false;
     });
   }
 }
 
-/* ================= CRYPTO & ACCESS CONTROL (AUTH ENGINE) ================= */
 function initAuthSystem() {
   const overlay = document.getElementById("auth-overlay");
   const switchBtn = document.getElementById("auth-switch-btn");
@@ -148,7 +141,7 @@ function initAuthSystem() {
       document.getElementById("auth-switch").innerHTML = isSignUpMode 
         ? 'لديك حساب بالفعل؟ <span id="auth-switch-btn" style="color:var(--accent-color);font-weight:700;cursor:pointer;">سجل دخولك</span>' 
         : 'ليس لديك حساب؟ <span id="auth-switch-btn" style="color:var(--accent-color);font-weight:700;cursor:pointer;">إنشاء حساب جديد</span>';
-      initAuthSystem(); // حلقة الربط الديناميكية للتبديل
+      initAuthSystem();
     });
   }
 
@@ -166,6 +159,7 @@ function initAuthSystem() {
       submitBtn.disabled = true;
       try {
         if (isSignUpMode) {
+          console.log("جاري محاولة إنشاء الحساب لـ:", email);
           const credential = await createUserWithEmailAndPassword(auth, email, password);
           const profile = {
             uid: credential.user.uid,
@@ -179,17 +173,19 @@ function initAuthSystem() {
           currentUserData = profile;
           showToast("تم تسجيل حسابك الحقيقي بنجاح! 🎉", "✅");
         } else {
+          console.log("جاري محاولة تسجيل الدخول لـ:", email);
           await signInWithEmailAndPassword(auth, email, password);
           showToast("مرحباً بك مجدداً في تايملاين Friends لايف! 🔥", "👋");
         }
       } catch (err) {
-        showToast("خطأ في العملية: الإيميل أو الباسورد غير صحيح.", "❌");
+        console.error("خطأ الفايربيز التفصيلي:", err);
+        // هنا هيطبعلك النص الصريح للخطأ عشان نعرف المشكلة فين بالظبط
+        showToast("السبب: " + err.message, "❌");
       }
       submitBtn.disabled = false;
     };
   }
 
-  // مستمع حالة الفايربيز الأساسي
   onAuthStateChanged(auth, async (user) => {
     if (user) {
       const snapshot = await getDoc(doc(db, "users", user.uid));
@@ -213,22 +209,15 @@ function syncCoreUserInterface() {
   });
   const textInput = document.getElementById("post-textarea");
   if (textInput) textInput.placeholder = `ماذا يدور في ذهنك اليوم يا ${currentUserData.name}؟`;
-
-  // مزامنة البروفايل عند الفتح
-  const pName = document.getElementById("profile-page-name");
-  const pBio = document.getElementById("profile-page-bio");
-  const pAvatar = document.getElementById("profile-page-avatar");
-  if (pName) pName.innerText = currentUserData.name;
-  if (pBio) pBio.innerText = currentUserData.bio;
-  if (pAvatar) pAvatar.src = currentUserData.avatar || DEFAULT_AVATAR;
 }
 
-/* ================= TIMELINE REALTIME PIPELINE ================= */
 function listenToIncomingPosts() {
   const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
   onSnapshot(q, (snapshot) => {
     const list = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
     renderLiveTimeline(list);
+  }, (err) => {
+    showToast("خطأ في جلب البيانات: " + err.message, "❌");
   });
 }
 
@@ -270,7 +259,6 @@ function renderLiveTimeline(posts) {
   }).join("");
 }
 
-/* ================= GLOBAL EXPOSED ATTACHMENTS ================= */
 window.executePostLike = async function (postId) {
   try {
     const ref = doc(db, "posts", postId);
@@ -293,7 +281,6 @@ window.openCommentsSheet = function (postId) {
   document.getElementById("comments-backdrop").classList.add("open");
   document.getElementById("comments-sheet").classList.add("open");
 
-  // تصفير وعرض لودينج خفيف للكومنتات
   const body = document.getElementById("sheet-comments-body");
   if (body) body.innerHTML = `<div style="text-align:center;padding:20px;color:var(--text-secondary);">جاري تحميل التعليقات لايف...</div>`;
 
