@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Friends Ultra-Clean Core UI & Engine - 2026 Integrated Edition
+   Friends Ultra-Clean Core UI & Engine - 2026 Integrated Edition (Fixed Demo)
    ========================================================================== */
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
@@ -40,38 +40,42 @@ const firebaseConfig = {
 
 let auth, db, isFirebase = false;
 
-try {
-  if (firebaseConfig.apiKey !== "YOUR_API_KEY") {
+// فحص ذكي: لو الرموز وهمية يتم تشغيل أزرار الواجهة كـ Demo دون قفل الصفحة
+if (firebaseConfig.apiKey && firebaseConfig.apiKey !== "YOUR_API_KEY" && !firebaseConfig.apiKey.includes("YOUR")) {
+  try {
     const app = initializeApp(firebaseConfig);
     auth = getAuth(app);
     db = getFirestore(app);
     isFirebase = true;
+    console.log("🔥 Firebase connected successfully!");
+  } catch (e) {
+    console.log("⚠️ Firebase initialization failed, running in Demo Mode.");
   }
-} catch (e) {
-  console.log("Firebase disabled");
+} else {
+  console.log("ℹ️ Running in Demo Mode (No real Firebase keys provided). Navigation is active!");
 }
 
 /* ================= STATE & CONSTANTS ================= */
 let appUser = null;
-let activePostIdForComments = null; // لحفظ الأيدي الخاص بالبوست المفتوح تعليقاته حالياً
+let activePostIdForComments = null;
 const DEFAULT_AVATAR = "https://www.gravatar.com/avatar/?d=mp";
 
 /* ================= INIT ON LOAD ================= */
 document.addEventListener("DOMContentLoaded", () => {
   initAuth();
   initUIComponents(); // تشغيل عناصر الواجهة الفخمة
+  initNavigationBypass(); // تشغيل أزرار التنقل السفلية والعلوية
 });
 
 /* ================= UI INTERACTIONS (LIGHTBOX, SHEET, TOAST) ================= */
 function initUIComponents() {
-  // إغلاق الـ Bottom Sheet للتعليقات
   const backdrop = document.getElementById("comments-backdrop");
   const sheet = document.getElementById("comments-sheet");
   const closeComments = document.getElementById("close-comments-btn");
 
   const closeSheetFunc = () => {
-    backdrop.classList.remove("open");
-    sheet.classList.remove("open");
+    if (backdrop) backdrop.classList.remove("open");
+    if (sheet) sheet.classList.remove("open");
     document.body.style.overflow = "";
     activePostIdForComments = null;
   };
@@ -79,7 +83,6 @@ function initUIComponents() {
   if (closeComments) closeComments.addEventListener("click", closeSheetFunc);
   if (backdrop) backdrop.addEventListener("click", closeSheetFunc);
 
-  // إغلاق الـ Lightbox لعرض الصور
   const lightbox = document.getElementById("global-lightbox");
   const closeLightbox = document.getElementById("close-lightbox-btn");
   if (closeLightbox) {
@@ -89,7 +92,6 @@ function initUIComponents() {
     });
   }
 
-  // ربط زر النشر الفخم الموجود في الـ HTML بكود الفايربيز الأساسي الخاص بك
   const publishBtn = document.getElementById("publish-post-btn");
   if (publishBtn) {
     publishBtn.addEventListener("click", async () => {
@@ -110,9 +112,42 @@ window.showToast = function (message, icon = "✨") {
   setTimeout(() => toast.classList.remove("show"), 3000);
 };
 
+/* ================= NAVIGATION BYPASS (NEW) ================= */
+function initNavigationBypass() {
+  // تشغيل زراير التنقل السفلية لايف بين الصفحات المرفوعة
+  document.querySelectorAll(".bottom-nav .nav-item, .main-header .circle-btn").forEach(item => {
+    item.addEventListener("click", (e) => {
+      const href = item.getAttribute("href") || item.getAttribute("onclick")?.match(/'([^']+)'/)?.[1];
+      if (href && href !== "#" && !href.startsWith("location")) {
+        e.preventDefault();
+        window.location.href = href;
+      }
+    });
+  });
+
+  // تشغيل جرس الإشعارات اللطيف علوياً
+  document.getElementById("noti-btn")?.addEventListener("click", () => {
+    window.showToast("No new notifications", "🔔");
+  });
+}
+
 /* ================= AUTH LOGIC ================= */
 function initAuth() {
-  if (!isFirebase) return showAuth();
+  if (!isFirebase) {
+    // محاكاة مستخدم وهمي في نمط الديمو لتشغيل الواجهة والبروفايل فوراً
+    appUser = {
+      uid: "demo_user",
+      name: "Demo Manager",
+      avatar: DEFAULT_AVATAR,
+      bio: "Managing the awesome Friends App!",
+      followers: [1, 2, 3],
+      following: [1, 2]
+    };
+    setupUIForUser();
+    // إذا كنا في صفحة البروفايل، نقوم بملء البيانات تلقائياً
+    fillProfilePageData();
+    return;
+  }
 
   onAuthStateChanged(auth, async (user) => {
     if (!user) return showAuth();
@@ -134,18 +169,40 @@ function initAuth() {
       appUser = snap.data();
     }
 
-    // تحديث الصور الشخصية في الهيدر وصندوق النشر فوراً بعد تسجيل الدخول
-    document.querySelectorAll("#nav-profile-img, .user-avatar").forEach(img => {
-        img.src = appUser.avatar || DEFAULT_AVATAR;
-    });
-
+    setupUIForUser();
+    fillProfilePageData();
     hideAuth();
     startFeed();
   });
 }
 
+function setupUIForUser() {
+  document.querySelectorAll("#nav-profile-img, .user-avatar").forEach(img => {
+    img.src = appUser.avatar || DEFAULT_AVATAR;
+  });
+}
+
+function fillProfilePageData() {
+  const pName = document.getElementById("profile-page-name");
+  const pBio = document.getElementById("profile-page-bio");
+  const pAvatar = document.getElementById("profile-page-avatar");
+  
+  if (pName) pName.innerText = appUser.name;
+  if (pBio) pBio.innerText = appUser.bio || "No bio available yet.";
+  if (pAvatar) pAvatar.src = appUser.avatar || DEFAULT_AVATAR;
+
+  // وضع أرقام تجريبية في نمط الديمو لعدادات المتابعين
+  if (document.getElementById("followers-count")) {
+    document.getElementById("followers-count").innerText = appUser.followers.length;
+    document.getElementById("following-count").innerText = appUser.following.length;
+    document.getElementById("posts-count").innerText = "0";
+  }
+}
+
 window.handleEmailAuth = async function (e, mode) {
   e.preventDefault();
+  if (!isFirebase) return window.showToast("Firebase is in Demo Mode", "ℹ️");
+
   try {
     const email = document.getElementById("login-email").value;
     const pass = document.getElementById("login-password").value;
@@ -182,6 +239,12 @@ window.publishPost = async function () {
   const text = textarea.value.trim();
   if (!text) return;
 
+  if (!isFirebase) {
+    textarea.value = "";
+    window.showToast("Published on Demo Mode!", "🚀");
+    return;
+  }
+
   try {
     const post = {
       text,
@@ -204,21 +267,22 @@ window.publishPost = async function () {
 /* ================= LIKE SYSTEM ================= */
 window.likePostEngine = async function (postId) {
   if (!appUser) return;
+  
+  const btn = document.querySelector(`[data-like-id="${postId}"]`);
+  if (btn) {
+    btn.classList.toggle("liked");
+    btn.style.transform = "scale(1.2)";
+    setTimeout(() => btn.style.transform = "", 150);
+  }
+
+  if (!isFirebase) return;
+
   const ref = doc(db, "posts", postId);
   const snap = await getDoc(ref);
-
   if (!snap.exists()) return;
 
   const data = snap.data();
   const liked = (data.likedBy || []).includes(appUser.uid);
-
-  // أنميشن بوب آب خفيف وتغيير فوري للون قبل إرسال الطلب للسيرفر لسرعة الاستجابة (UX)
-  const btn = document.querySelector(`[data-like-id="${postId}"]`);
-  if (btn) {
-      btn.classList.toggle("liked");
-      btn.style.transform = "scale(1.2)";
-      setTimeout(() => btn.style.transform = "", 150);
-  }
 
   await updateDoc(ref, {
     likedBy: liked ? arrayRemove(appUser.uid) : arrayUnion(appUser.uid),
@@ -226,24 +290,28 @@ window.likePostEngine = async function (postId) {
   });
 };
 
-/* ================= COMMENTS INLINE ENGINE (NEW) ================= */
+/* ================= COMMENTS INLINE ENGINE ================= */
 window.openCommentsSheet = function(postId) {
     activePostIdForComments = postId;
     const backdrop = document.getElementById("comments-backdrop");
     const sheet = document.getElementById("comments-sheet");
     
-    backdrop.classList.add("open");
-    sheet.classList.add("open");
+    if (backdrop) backdrop.classList.add("open");
+    if (sheet) sheet.classList.add("open");
     document.body.style.overflow = "hidden";
     
-    // استدعاء جلب التعليقات الخاصة بهذا البوست من الفايربيز
-    startCommentsListener(postId);
+    if (isFirebase) {
+        startCommentsListener(postId);
+    } else {
+        const container = document.getElementById("comments-list-body");
+        if (container) container.innerHTML = `<p style="text-align:center; color:var(--text-secondary); padding:20px;">Demo comments active. Add a comment!</p>`;
+    }
 };
 
 function startCommentsListener(postId) {
     const q = query(collection(db, "posts", postId, "comments"), orderBy("createdAt", "asc"));
     onSnapshot(q, (snap) => {
-        if (activePostIdForComments !== postId) return; // حماية لعدم تداخل الغرف
+        if (activePostIdForComments !== postId) return;
         const container = document.getElementById("comments-list-body");
         if (!container) return;
 
@@ -267,13 +335,18 @@ function startCommentsListener(postId) {
     });
 }
 
-// تنفيذ إرسال تعليق جديد
 const sendCommentBtn = document.getElementById("send-comment-btn");
 if (sendCommentBtn) {
     sendCommentBtn.addEventListener("click", async () => {
         const input = document.getElementById("new-comment-input");
         const text = input.value.trim();
         if (!text || !activePostIdForComments) return;
+
+        if (!isFirebase) {
+            input.value = "";
+            window.showToast("Comment added (Demo)!", "💬");
+            return;
+        }
 
         const commentData = {
             text,
@@ -288,17 +361,9 @@ if (sendCommentBtn) {
     });
 }
 
-/* ================= LIGHTBOX TRIGGER ================= */
-window.openGlobalLightbox = function(imgSrc) {
-    const lightbox = document.getElementById("global-lightbox");
-    const lightboxImg = document.getElementById("lightbox-img");
-    lightboxImg.src = imgSrc;
-    lightbox.style.display = "flex";
-    document.body.style.overflow = "hidden";
-};
-
 /* ================= TIMELINE REALTIME FEED ================= */
 function startFeed() {
+  if (!isFirebase) return;
   const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
 
   onSnapshot(q, (snap) => {
@@ -318,7 +383,6 @@ function renderTimeline(posts) {
 
   feed.innerHTML = posts.map(p => {
     const liked = (p.likedBy || []).includes(appUser.uid);
-    // معالجة الوقت بشكل مبسط في حال لم يأتي السيرفر بالتايم ستامب فوراً
     const timeString = p.createdAt ? new Date(p.createdAt.seconds * 1000).toLocaleDateString() : "Just now";
 
     return `
@@ -355,7 +419,10 @@ function renderTimeline(posts) {
 window.updateProfileCloudData = async function (name, bio) {
   appUser.name = name;
   appUser.bio = bio;
-  await setDoc(doc(db, "users", appUser.uid), appUser, { merge: true });
+  if (isFirebase) {
+    await setDoc(doc(db, "users", appUser.uid), appUser, { merge: true });
+  }
+  fillProfilePageData();
   window.showToast("Profile updated successfully!");
 };
 
