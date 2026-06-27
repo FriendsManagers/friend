@@ -1,1367 +1,1835 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Friends - Social App</title>
 
-    <style>
-        /* =========================================
-           1. إعدادات عامة (Variables & Theme)
-           ========================================= */
+<meta charset="UTF-8">
 
-        :root {
-            --bg-main: #f5f6f7;
-            --bg-card: #ffffff;
-            --bg-input: #f0f2f5;
-            --bg-button-hover: #e4e6eb;
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0">
 
-            --text-main: #050505;
-            --text-secondary: #65676b;
-            --text-muted: #9a9a9a;
+<title>Friends</title>
 
-            --accent-brand: #1877f2;
-            --accent-brand-light: rgba(24, 119, 242, 0.15);
+<!-- Firebase -->
 
-            --border-color: #dddfe2;
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 
-            --color-danger: #e41e3f;
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
-            --radius-sm: 8px;
-            --radius-md: 12px;
-            --radius-lg: 16px;
-            --radius-round: 50%;
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
 
-            --shadow-subtle: 0 1px 2px rgba(0,0,0,0.08);
-            --shadow-lg: 0 10px 30px rgba(0,0,0,0.15);
+<link rel="preconnect" href="https://fonts.googleapis.com">
 
-            --transition-smooth: all 0.2s ease;
-            --safe-bottom: env(safe-area-inset-bottom);
-        }
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-        /* Dark Mode */
-        [data-theme="dark"] {
-            --bg-main: #18191a;
-            --bg-card: #242526;
-            --bg-input: #3a3b3c;
-            --bg-button-hover: #4e4f50;
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
 
-            --text-main: #e4e6eb;
-            --text-secondary: #b0b3b8;
-            --text-muted: #777;
+<style>
 
-            --border-color: #3e4042;
-        }
+*{
 
-        /* =========================================
-           2. Reset عام
-           ========================================= */
+margin:0;
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: Arial, sans-serif;
-        }
+padding:0;
 
-        body {
-            background: var(--bg-main);
-            color: var(--text-main);
-            direction: rtl;
-        }
+box-sizing:border-box;
 
-        /* =========================================
-           3. Layout أساسي
-           ========================================= */
+font-family:'Cairo',sans-serif;
 
-        .container {
-            max-width: 600px;
-            margin: auto;
-            padding: 70px 16px 80px;
-        }
-
-        header {
-            position: fixed;
-            top: 0;
-            right: 0;
-            left: 0;
-            height: 60px;
-            background: var(--bg-card);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 16px;
-            border-bottom: 1px solid var(--border-color);
-            z-index: 1000;
-        }
-
-        .header-logo {
-            font-weight: 900;
-            color: var(--accent-brand);
-            text-decoration: none;
-            font-size: 20px;
-        }
-
-        .header-actions-cluster {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .circle-icon-btn {
-            width: 36px;
-            height: 36px;
-            border-radius: var(--radius-round);
-            border: none;
-            background: var(--bg-input);
-            cursor: pointer;
-        }
-
-        /* =========================================
-           4. Bottom Navigation
-           ========================================= */
-
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            right: 0;
-            left: 0;
-            height: 60px;
-            background: var(--bg-card);
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            border-top: 1px solid var(--border-color);
-            z-index: 1000;
-        }
-
-        .bottom-nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            font-size: 12px;
-            color: var(--text-secondary);
-            cursor: pointer;
-        }
-
-        .bottom-nav-item.active {
-            color: var(--accent-brand);
-        }
-
-        /* =========================================
-           5. Auth Screen
-           ========================================= */
-
-        .auth-overlay-screen {
-            position: fixed;
-            inset: 0;
-            background: var(--bg-main);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-        }
-
-        .auth-box-card {
-            width: 100%;
-            max-width: 380px;
-            background: var(--bg-card);
-            padding: 20px;
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-lg);
-        }
-
-        .auth-nav-tabs {
-            display: flex;
-            margin-bottom: 16px;
-            gap: 10px;
-        }
-
-        .auth-tab-btn {
-            flex: 1;
-            padding: 10px;
-            text-align: center;
-            border-radius: var(--radius-md);
-            background: var(--bg-input);
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 13px;
-        }
-
-        .auth-tab-btn.active-tab {
-            background: var(--accent-brand);
-            color: white;
-        }
-
-        .auth-inputs-form {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .auth-inputs-form input {
-            padding: 12px;
-            border-radius: var(--radius-md);
-            border: 1px solid var(--border-color);
-            background: var(--bg-input);
-            color: var(--text-main);
-            outline: none;
-        }
-
-        /* =========================================
-           6. Buttons Base
-           ========================================= */
-
-        .btn-action-primary {
-            background: var(--accent-brand);
-            color: white;
-            border: none;
-            padding: 10px 16px;
-            border-radius: var(--radius-md);
-            cursor: pointer;
-            font-weight: bold;
-        }
-
-        .btn-action-primary:hover {
-            opacity: 0.9;
-        }
-
-    </style>
-</head><style>
-
-/* =========================================
-   7. Create Post + Notes
-   ========================================= */
-
-.create-post-card {
-    background: var(--bg-card);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-lg);
-    padding: 16px;
-    margin-bottom: 20px;
 }
 
-.create-post-input-area {
-    display: flex;
-    gap: 12px;
-    align-items: flex-start;
+:root{
+
+--accent-brand:#1877f2;
+
+--accent-brand-light:#e7f3ff;
+
+--bg-main:#f0f2f5;
+
+--bg-card:#ffffff;
+
+--bg-input:#f5f6f7;
+
+--bg-button-hover:#e4e6eb;
+
+--text-main:#050505;
+
+--text-secondary:#65676b;
+
+--text-muted:#8a8d91;
+
+--border-color:#dadde1;
+
+--radius-sm:8px;
+
+--radius-md:12px;
+
+--radius-lg:18px;
+
+--radius-round:50%;
+
+--shadow-subtle:0 2px 6px rgba(0,0,0,.05);
+
+--shadow-lg:0 10px 30px rgba(0,0,0,.15);
+
+--transition:.25s;
+
 }
 
-.create-post-creator-avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
+[data-theme="dark"]{
+
+--bg-main:#18191a;
+
+--bg-card:#242526;
+
+--bg-input:#3a3b3c;
+
+--bg-button-hover:#4e4f50;
+
+--text-main:#e4e6eb;
+
+--text-secondary:#b0b3b8;
+
+--text-muted:#888;
+
+--border-color:#3a3b3c;
+
 }
 
-.create-post-card textarea {
-    flex: 1;
-    border: none;
-    background: transparent;
-    resize: none;
-    outline: none;
-    color: var(--text-main);
-    font-size: 15px;
+body{
+
+background:var(--bg-main);
+
+color:var(--text-main);
+
+overflow-x:hidden;
+
+padding-top:70px;
+
+padding-bottom:90px;
+
+transition:.3s;
+
 }
 
-/* =========================================
-   8. Feed Posts
-   ========================================= */
+header{
 
-.feed-post-node-card {
-    background: var(--bg-card);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-lg);
-    padding: 14px;
-    margin-bottom: 14px;
-    box-shadow: var(--shadow-subtle);
+position:fixed;
+
+top:0;
+
+right:0;
+
+left:0;
+
+height:65px;
+
+background:var(--bg-card);
+
+display:flex;
+
+justify-content:space-between;
+
+align-items:center;
+
+padding:0 18px;
+
+border-bottom:1px solid var(--border-color);
+
+z-index:99999;
+
+box-shadow:var(--shadow-subtle);
+
 }
 
-.feed-post-meta-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
+.header-logo{
+
+font-size:28px;
+
+font-weight:900;
+
+color:var(--accent-brand);
+
+text-decoration:none;
+
 }
 
-.author-identity-container {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    cursor: pointer;
+.header-actions{
+
+display:flex;
+
+align-items:center;
+
+gap:12px;
+
 }
 
-.author-profile-avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
+.circle-btn{
+
+width:42px;
+
+height:42px;
+
+border-radius:50%;
+
+border:none;
+
+cursor:pointer;
+
+background:var(--bg-input);
+
+font-size:18px;
+
+transition:.25s;
+
 }
 
-.author-display-username {
-    font-weight: bold;
-    font-size: 14px;
+.circle-btn:hover{
+
+background:var(--bg-button-hover);
+
+transform:scale(1.05);
+
 }
 
-.post-body-text-block {
-    font-size: 15px;
-    line-height: 1.6;
-    margin-bottom: 10px;
+.header-avatar{
+
+width:42px;
+
+height:42px;
+
+border-radius:50%;
+
+cursor:pointer;
+
+object-fit:cover;
+
+border:2px solid var(--border-color);
+
 }
 
-/* Media inside posts */
-.post-embedded-media-frame {
-    width: 100%;
-    border-radius: var(--radius-md);
-    max-height: 400px;
-    object-fit: cover;
-    margin-bottom: 10px;
+.container{
+
+width:min(700px,95%);
+
+margin:auto;
+
 }
 
-/* =========================================
-   9. Buttons & Actions
-   ========================================= */
+.bottom-nav{
 
-.post-interactive-buttons-hub {
-    display: flex;
-    justify-content: space-between;
-    border-top: 1px solid var(--border-color);
-    padding-top: 8px;
+position:fixed;
+
+bottom:0;
+
+right:0;
+
+left:0;
+
+height:70px;
+
+background:var(--bg-card);
+
+display:flex;
+
+justify-content:space-around;
+
+align-items:center;
+
+border-top:1px solid var(--border-color);
+
+z-index:99999;
+
 }
 
-.interaction-trigger-node {
-    flex: 1;
-    border: none;
-    background: transparent;
-    cursor: pointer;
-    padding: 10px;
-    color: var(--text-secondary);
+.bottom-nav-item{
+
+display:flex;
+
+flex-direction:column;
+
+align-items:center;
+
+gap:3px;
+
+font-size:12px;
+
+cursor:pointer;
+
+color:var(--text-secondary);
+
+font-weight:700;
+
+transition:.25s;
+
 }
 
-.interaction-trigger-node.liked-state-active {
-    color: var(--accent-brand);
+.bottom-nav-item.active{
+
+color:var(--accent-brand);
+
 }
 
-/* =========================================
-   10. Reels UI
-   ========================================= */
+.bottom-nav-item:hover{
 
-.reels-vertical-stream {
-    display: none;
-    flex-direction: column;
-    gap: 20px;
+transform:translateY(-2px);
+
 }
 
-.reels-vertical-stream.active-stream {
-    display: flex;
+.nav-icon{
+
+font-size:22px;
+
 }
 
-.reel-structural-card {
-    position: relative;
-    background: black;
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-    aspect-ratio: 9/16;
+.app-view-panel{
+
+display:none;
+
+animation:fade .25s;
+
 }
 
-.reel-video-element {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+.app-view-panel.active-panel{
+
+display:block;
+
 }
 
-.reel-sidebar-engagement-panel {
-    position: absolute;
-    left: 10px;
-    bottom: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+@keyframes fade{
+
+from{
+
+opacity:0;
+
+transform:translateY(20px);
+
 }
 
-.reel-action-circular-icon {
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.15);
-    border: 1px solid rgba(255,255,255,0.2);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-}
+to{
 
-/* =========================================
-   11. Comments Bottom Sheet
-   ========================================= */
+opacity:1;
 
-.comments-bottom-sheet-frame {
-    position: fixed;
-    bottom: -100%;
-    left: 0;
-    width: 100%;
-    height: 80vh;
-    background: var(--bg-card);
-    border-radius: 16px 16px 0 0;
-    transition: 0.4s;
-    display: flex;
-    flex-direction: column;
-    z-index: 9999;
-}
+transform:none;
+<body>
 
-.comments-bottom-sheet-frame.sheet-state-open {
-    bottom: 0;
-}
+<!-- ========================= -->
+<!-- شاشة تسجيل الدخول -->
+<!-- ========================= -->
+<div id="application-auth-overlay" class="auth-overlay-screen">
+    <div class="auth-box-card">
 
-.modal-sheet-backdrop {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.5);
-    display: none;
-}
+        <h1 class="logo-title">Friends</h1>
+        <p class="logo-subtitle">
+            سجل دخولك للتواصل مع أصدقائك
+        </p>
 
-.modal-sheet-backdrop.backdrop-state-visible {
-    display: block;
-}
+        <div class="auth-nav-tabs">
+            <button id="tab-login-btn"
+                class="auth-tab-btn active-tab"
+                onclick="toggleAuthFormsUX('login')">
+                تسجيل الدخول
+            </button>
 
-/* =========================================
-   12. Shimmer Loading
-   ========================================= */
+            <button id="tab-register-btn"
+                class="auth-tab-btn"
+                onclick="toggleAuthFormsUX('register')">
+                إنشاء حساب
+            </button>
+        </div>
 
-.shimmer-card-container {
-    background: var(--bg-card);
-    padding: 16px;
-    border-radius: var(--radius-lg);
-}
+        <!-- Login -->
 
-.shimmer-placeholder-line {
-    height: 12px;
-    background: #ddd;
-    margin-bottom: 8px;
-    border-radius: 6px;
-    overflow: hidden;
-    position: relative;
-}
+        <div id="app-login-form-node" class="auth-inputs-form">
 
-.shimmer-placeholder-line::after {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 100%;
-    width: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-    animation: shimmer 1.5s infinite;
-}
+            <input
+                type="text"
+                id="auth-login-username"
+                placeholder="اسم المستخدم">
 
-@keyframes shimmer {
-    0% { transform: translateX(-100%); }
-    100% { transform: translateX(100%); }
-}
+            <input
+                type="password"
+                id="auth-login-password"
+                placeholder="كلمة المرور">
 
-/* =========================================
-   13. Toast + Lightbox
-   ========================================= */
+            <button
+                class="btn-action-primary"
+                onclick="manualLogin()">
+                تسجيل الدخول
+            </button>
 
-#system-notification-toast {
-    position: fixed;
-    top: -100px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #111;
-    color: white;
-    padding: 12px 24px;
-    border-radius: 30px;
-    transition: 0.3s;
-    z-index: 99999;
-}
+        </div>
 
-#system-notification-toast.toast-state-visible {
-    top: 20px;
-}
+        <!-- Register -->
 
-.media-lightbox-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.95);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    z-index: 100000;
-}
+        <form
+            id="app-register-form-node"
+            class="auth-inputs-form"
+            style="display:none"
+            onsubmit="manualRegister(event)">
 
-.lightbox-responsive-media {
-    max-width: 95%;
-    max-height: 90vh;
-}
+            <input
+                type="text"
+                id="auth-reg-username"
+                placeholder="اسم المستخدم">
 
-</style>
-// =============================================
-// 14. التعليقات (Comments System)
-// =============================================
+            <input
+                type="email"
+                id="auth-reg-email"
+                placeholder="البريد الإلكتروني">
 
-function openCommentsBottomSheetComponent(postId, commentsArrayData, isPostOwner) {
-    document.getElementById('comments-modal-backdrop')
-        .classList.add('backdrop-state-visible');
+            <input
+                type="password"
+                id="auth-reg-password"
+                placeholder="كلمة المرور">
 
-    document.getElementById('global-comments-sheet-container')
-        .classList.add('sheet-state-open');
+            <button
+                class="btn-action-primary"
+                type="submit">
 
-    document.body.style.overflow = "hidden";
+                إنشاء الحساب
 
-    document.getElementById('comments-panel-counter-title').innerText =
-        `التعليقات (${commentsArrayData.length})`;
+            </button>
 
-    const wall = document.getElementById('comments-rendering-wall-mount');
-    wall.innerHTML = "";
+        </form>
 
-    if (commentsArrayData.length === 0) {
-        wall.innerHTML = `<div style="text-align:center;padding:20px;color:var(--text-secondary)">لا توجد تعليقات</div>`;
-    }
+    </div>
+</div>
 
-    commentsArrayData.forEach((commentItem, indexPointer) => {
-        const userKey = String(commentItem.user || "").toLowerCase().trim();
-        const avatar = globalUsersProfileMap[userKey] ||
-            "https://img.icons8.com/illustrations/style=flat/color=blue/card-user.png";
+<!-- ========================= -->
+<!-- Toast -->
+<!-- ========================= -->
 
-        const canDelete =
-            userKey === currentUser.toLowerCase() || isPostOwner;
+<div id="system-notification-toast">
 
-        const deleteBtn = canDelete
-            ? `<button class="admin-action-btn delete-trigger"
-                onclick="executeCommentDeletionTransaction('${postId}', ${indexPointer}, ${JSON.stringify(commentsArrayData)}, ${isPostOwner})">🗑️</button>`
-            : "";
+    <span id="toast-icon-holder">✨</span>
 
-        const node = document.createElement("div");
-        node.className = "comment-node-layout";
+    <span id="toast-message-holder">
+        جاري التنفيذ...
+    </span>
 
-        node.innerHTML = `
-            <div class="comment-avatar-wrapper">
-                <img src="${avatar}" class="comment-author-avatar-img"
-                    onclick="routeToUserProfileQuery('${commentItem.user}')">
+</div>
 
-                <div class="comment-bubble-content-block">
-                    <span class="comment-author-name-anchor">@${commentItem.user}</span>
-                    <p class="comment-body-pure-text">${commentItem.text}</p>
-                </div>
-            </div>
-            ${deleteBtn}
-        `;
+<!-- ========================= -->
+<!-- Lightbox -->
+<!-- ========================= -->
 
-        wall.appendChild(node);
-    });
+<div
+    class="media-lightbox-overlay"
+    id="global-media-lightbox">
 
-    document.getElementById('comments-action-footer-zone').innerHTML = `
-        <input type="text" id="live-new-comment-input-element" placeholder="اكتب تعليقاً...">
-        <button class="btn-action-primary"
-            onclick="dispatchNewCommentTransactionToCloud('${postId}', ${JSON.stringify(commentsArrayData)}, ${isPostOwner})">
-            إرسال
+    <div id="lightbox-mount-point"></div>
+
+</div>
+
+<!-- ========================= -->
+<!-- Backdrop -->
+<!-- ========================= -->
+
+<div
+    class="modal-sheet-backdrop"
+    id="comments-modal-backdrop">
+</div>
+
+<!-- ========================= -->
+<!-- Bottom Sheet -->
+<!-- ========================= -->
+
+<div
+    class="comments-bottom-sheet-frame"
+    id="global-comments-sheet-container">
+
+    <div class="sheet-structural-header">
+
+        <div class="sheet-drag-handle-bar"></div>
+
+        <div
+            id="comments-panel-counter-title"
+            class="sheet-header-title-text">
+
+            التعليقات (0)
+
+        </div>
+
+        <span
+            id="dismiss-comments-sheet-trigger"
+            class="sheet-dismiss-close-x">
+
+            ✕
+
+        </span>
+
+    </div>
+
+    <div
+        id="comments-rendering-wall-mount"
+        class="sheet-scrollable-comments-area">
+    </div>
+
+    <div
+        id="comments-action-footer-zone"
+        class="sheet-interactive-footer-input-panel">
+    </div>
+
+</div>
+
+<!-- ========================= -->
+<!-- Header -->
+<!-- ========================= -->
+
+<header>
+
+    <div class="header-logo-container">
+
+        <a
+            href="#"
+            class="header-logo">
+
+            Friends
+
+        </a>
+
+    </div>
+
+    <div class="header-actions-cluster">
+
+        <button
+            id="app-theme-switcher-btn"
+            class="circle-icon-btn">
+
+            🌓
+
         </button>
-    `;
-}
 
-function closeGlobalCommentsBottomSheet() {
-    document.getElementById('comments-modal-backdrop')
-        .classList.remove('backdrop-state-visible');
+        <button
+            id="app-logout-trigger-btn"
+            class="circle-icon-btn">
 
-    document.getElementById('global-comments-sheet-container')
-        .classList.remove('sheet-state-open');
+            🚪
 
-    document.body.style.overflow = "auto";
-}
+        </button>
 
-// =============================================
-// 15. Lightbox (عرض الصور)
-// =============================================
+        <div class="header-avatar-link">
 
-function triggerGlobalMediaLightboxDisplay(mediaUrl) {
-    const box = document.getElementById('global-media-lightbox');
-    const mount = document.getElementById('lightbox-mount-point');
+            <img
+                id="header-profile-avatar-node"
+                class="header-avatar"
+                src="https://img.icons8.com/fluency/96/user-male-circle.png">
 
-    box.style.display = "flex";
-    mount.innerHTML = `<img src="${mediaUrl}" class="lightbox-responsive-media">`;
-}
+        </div>
 
-document.getElementById('global-media-lightbox')
-.addEventListener('click', (e) => {
-    if (e.target.id === 'global-media-lightbox') {
-        document.getElementById('global-media-lightbox').style.display = "none";
-        document.getElementById('lightbox-mount-point').innerHTML = "";
-    }
-});
+    </div>
 
-// =============================================
-// 16. Toast System (تنبيهات)
-// =============================================
+</header>
 
-let toastTimeout;
+<!-- ========================= -->
+<!-- Bottom Navigation -->
+<!-- ========================= -->
 
-function displaySystemToast(message, type = "info") {
-    const toast = document.getElementById('system-notification-toast');
-    const icon = document.getElementById('toast-icon-holder');
-    const text = document.getElementById('toast-message-holder');
+<nav class="bottom-nav">
 
-    const icons = {
-        success: "✅",
-        danger: "❌",
-        info: "ℹ️",
-        upload: "⏳"
-    };
+    <div
+        id="nav-tab-home-trigger"
+        class="bottom-nav-item active">
 
-    icon.innerText = icons[type] || "✨";
-    text.innerText = message;
+        <span class="nav-icon">🏠</span>
 
-    toast.classList.add("toast-state-visible");
+        <span>الرئيسية</span>
 
-    clearTimeout(toastTimeout);
-    toastTimeout = setTimeout(() => {
-        toast.classList.remove("toast-state-visible");
-    }, 2500);
-}
+    </div>
 
-// =============================================
-// 17. Tabs System (تنقل سلس)
-// =============================================
+    <div
+        id="nav-tab-explore-trigger"
+        class="bottom-nav-item">
 
-function setActiveTab(tabId) {
-    document.querySelectorAll(".bottom-nav-item")
-        .forEach(el => el.classList.remove("active"));
+        <span class="nav-icon">🔍</span>
 
-    const active = document.getElementById(tabId);
-    if (active) active.classList.add("active");
-}
+        <span>استكشاف</span>
 
-function executeTabSwitchingLogic(tab) {
-    activeAppTabContext = tab;
+    </div>
 
-    setActiveTab(`nav-tab-${tab}-trigger`);
+    <div
+        id="nav-tab-reels-trigger"
+        class="bottom-nav-item">
 
-    document.getElementById("app-content-search-field").value = "";
+        <span class="nav-icon">🎬</span>
 
-    const home = document.getElementById("view-panel-home");
-    const reels = document.getElementById("view-panel-reels");
-    const reelsStream = document.getElementById("reels-isolated-stream-mount");
+        <span>ريلز</span>
 
-    if (tab === "home") {
-        document.getElementById("global-search-container-wrapper").style.display = "none";
+    </div>
 
-        home.className = "app-view-panel active-panel";
-        reels.className = "app-view-panel";
+    <div
+        id="nav-tab-chat-trigger"
+        class="bottom-nav-item">
 
-        reelsStream.classList.remove("active-stream");
+        <span class="nav-icon">💬</span>
 
-        renderTimelinePostsFeed(globalPostsCache);
-    }
+        <span>رسائل</span>
 
-    else if (tab === "explore") {
-        document.getElementById("global-search-container-wrapper").style.display = "block";
+    </div>
 
-        home.className = "app-view-panel active-panel";
-        reels.className = "app-view-panel";
+    <div
+        id="nav-tab-profile-trigger"
+        class="bottom-nav-item">
 
-        document.getElementById("app-content-search-field").focus();
+        <span class="nav-icon">👤</span>
 
-        renderTimelinePostsFeed(globalPostsCache);
-    }
+        <span>حسابي</span>
 
-    else if (tab === "reels") {
-        document.getElementById("global-search-container-wrapper").style.display = "none";
+    </div>
 
-        home.className = "app-view-panel";
-        reels.className = "app-view-panel active-panel";
+</nav>
 
-        reelsStream.classList.add("active-stream");
+<!-- ========================= -->
+<!-- Container -->
+<!-- ========================= -->
 
-        renderIsolatedReelsStream();
-    }
-}
-
-// =============================================
-// 18. تحسين الأداء (Render Protection)
-// =============================================
-
-let isRendering = false;
+<div class="container">
 
-async function synchronizePostsFeedWithCloud() {
-    if (isRendering) return;
-    isRendering = true;
+    <!-- Search -->
 
-    try {
-        const snap = await db.collection("posts").get();
+    <div
+        id="global-search-container-wrapper"
+        class="search-container-box"
+        style="display:none">
 
-        globalPostsCache = [];
+        <div class="search-input-frame">
 
-        snap.forEach(doc => {
-            globalPostsCache.push({ id: doc.id, ...doc.data() });
-        });
+            <span class="search-icon-inside">
+                🔍
+            </span>
 
-        globalPostsCache.sort((a, b) =>
-            (b.timestamp || 0) - (a.timestamp || 0)
-        );
+            <input
+                id="app-content-search-field"
+                type="text"
+                placeholder="ابحث...">
 
-        if (activeAppTabContext === "reels") {
-            renderIsolatedReelsStream();
-        } else {
-            renderTimelinePostsFeed(globalPostsCache);
-        }
+        </div>
 
-    } catch (err) {
-        console.error(err);
-    }
-// =============================================
-// 🚀 الجزء 4 — Infinite Scroll + Performance + FAB + Lazy Loading
-// =============================================
-
-// =====================
-// 🧩 1. Infinite Scroll (تحميل تدريجي)
-// =====================
-let lastVisiblePost = null;
-let isLoadingMorePosts = false;
-let allPostsLoaded = false;
-
-async function loadInitialPosts() {
-    try {
-        const snap = await db.collection("posts")
-            .orderBy("timestamp", "desc")
-            .limit(10)
-            .get();
-
-        globalPostsCache = [];
-
-        snap.forEach(doc => {
-            globalPostsCache.push({ id: doc.id, ...doc.data() });
-        });
-
-        renderTimelinePostsFeed(globalPostsCache);
-
-        lastVisiblePost = snap.docs[snap.docs.length - 1];
-
-    } catch (err) {
-        console.error(err);
-    }
-}
-
-// =====================
-// 🧩 2. Scroll Listener (تحميل عند الوصول للأسفل)
-// =====================
-window.addEventListener("scroll", async () => {
-    if (activeAppTabContext !== "home") return;
-    if (isLoadingMorePosts || allPostsLoaded) return;
-
-    const scrollPos = window.innerHeight + window.scrollY;
-    const pageHeight = document.body.offsetHeight;
-
-    if (scrollPos >= pageHeight - 200) {
-        await loadMorePosts();
-    }
-});
-
-// =====================
-// 🧩 3. تحميل المزيد من Firestore
-// =====================
-async function loadMorePosts() {
-    if (!lastVisiblePost) return;
-
-    isLoadingMorePosts = true;
-
-    try {
-        const snap = await db.collection("posts")
-            .orderBy("timestamp", "desc")
-            .startAfter(lastVisiblePost)
-            .limit(10)
-            .get();
-
-        if (snap.empty) {
-            allPostsLoaded = true;
-            return;
-        }
-
-        snap.forEach(doc => {
-            globalPostsCache.push({ id: doc.id, ...doc.data() });
-        });
-
-        lastVisiblePost = snap.docs[snap.docs.length - 1];
-
-        renderTimelinePostsFeed(globalPostsCache);
-
-    } catch (err) {
-        console.error(err);
-    }
-
-    isLoadingMorePosts = false;
-}
-
-// =====================
-// 🚀 4. Floating Action Button (FAB)
-// =====================
-
-const fabBtn = document.createElement("button");
-fabBtn.id = "floating-create-post-btn";
-fabBtn.innerText = "+";
-document.body.appendChild(fabBtn);
-
-fabBtn.addEventListener("click", () => {
-    document.getElementById("create-post-textarea-field").focus();
-    window.scrollTo({ top: 0, behavior: "smooth" });
-});
-
-// CSS (حقنه لو مش موجود عندك)
-const fabStyle = document.createElement("style");
-fabStyle.innerHTML = `
-#floating-create-post-btn {
-    position: fixed;
-    bottom: 80px;
-    right: 16px;
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    background: var(--accent-brand);
-    color: white;
-    font-size: 26px;
-    border: none;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-    cursor: pointer;
-    z-index: 99999;
-    transition: 0.2s;
-}
-
-#floating-create-post-btn:hover {
-    transform: scale(1.1);
-}
-`;
-document.head.appendChild(fabStyle);
-
-// =====================
-// ⚡ 5. Lazy Loading للصور
-// =====================
-function lazyLoadImages() {
-    const images = document.querySelectorAll("img");
-
-    const observer = new IntersectionObserver(entries => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                const img = entry.target;
-
-                if (img.dataset.src) {
-                    img.src = img.dataset.src;
-                }
-
-                observer.unobserve(img);
-            }
-        });
-    });
-
-    images.forEach(img => observer.observe(img));
-}
-
-// استدعاء بعد الرندر
-setTimeout(() => {
-    lazyLoadImages();
-}, 300);
-
-// =====================
-// 🎬 6. Auto Play للريلز (TikTok Style)
-// =====================
-function enableReelsAutoPlay() {
-    const videos = document.querySelectorAll(".reel-video-element");
-
-    const observer = new IntersectionObserver(entries => {
-        entries.forEach(entry => {
-            const video = entry.target;
-
-            if (entry.isIntersecting) {
-                video.play();
-            } else {
-                video.pause();
-            }
-        });
-    }, { threshold: 0.7 });
-
-    videos.forEach(video => observer.observe(video));
-}
-
-// استدعاء داخل الريلز
-function initReelsEnhancements() {
-    setTimeout(enableReelsAutoPlay, 500);
-}
-
-// =====================
-// ⚡ 7. Debounce (تحسين البحث)
-// =====================
-function debounce(func, delay) {
-    let timeout;
-    return function (...args) {
-        clearTimeout(timeout);
-        timeout = setTimeout(() => func.apply(this, args), delay);
-    };
-}
-
-// استبدال event listen
-er القديم
-document.getElementById("app-content-search-field")
-.addEventListener(
-    "input",
-    debounce(executeRealtimeContentSearchFilter, 300)
-);
-    // =============================================
-// الجزء 5 - RealTime
-// =============================================
-
-let postsRealtimeListener = null;
-let notesRealtimeListener = null;
-let usersRealtimeListener = null;
-    function startRealtimePostsListener() {
-
-    if (postsRealtimeListener) {
-        postsRealtimeListener();
-    }
-
-    postsRealtimeListener = db.collection("posts")
-        .orderBy("timestamp", "desc")
-        .onSnapshot(snapshot => {
-
-            globalPostsCache = [];
-
-            snapshot.forEach(doc => {
-
-                globalPostsCache.push({
-                    id: doc.id,
-                    ...doc.data()
-                });
-
-            });
-
-            if (activeAppTabContext === "reels") {
-
-                renderIsolatedReelsStream();
-
-            } else {
-
-                renderTimelinePostsFeed(globalPostsCache);
-
-            }
-
-        });
-
-}
-    function startRealtimeNotesListener() {
-
-    if (notesRealtimeListener) {
-        notesRealtimeListener();
-    }
-
-    notesRealtimeListener =
-        db.collection("notes")
-        .orderBy("timestamp","desc")
-        .onSnapshot(snapshot=>{
-
-            const notes=[];
-
-            snapshot.forEach(doc=>{
-
-                notes.push({
-                    id:doc.id,
-                    ...doc.data()
-                });
-
-            });
-
-            renderNotesRealtime(notes);
-
-        });
-
-}
-    function renderNotesRealtime(notes){
-
-    const container=document.getElementById(
-        "notes-wall-mount-point"
-    );
-
-    container.innerHTML="";
-
-    notes.forEach(note=>{
-
-        const avatar=
-        globalUsersProfileMap[
-        note.user.toLowerCase()
-        ] ||
-        "https://img.icons8.com/illustrations/style=flat/color=blue/card-user.png";
-
-        container.innerHTML+=`
-
-        <div class="note-bubble-card">
-
-            <p class="note-bubble-text-content">
-                ${note.text}
-            </p>
+    </div>
+
+    <!-- Home -->
+
+    <div
+        id="view-panel-home"
+        class="app-view-panel active-panel">
+
+        <!-- Notes -->
+
+        <div class="add-note-inline-bar">
+
+            <input
+                id="note-text-input-element"
+                type="text"
+                maxlength="60"
+                placeholder="اكتب ملاحظة...">
+
+            <button
+                id="publish-note-trigger-btn"
+                class="btn-action-primary">
+
+                نشر
+
+            </button>
+
+        </div>
+
+        <div class="notes-section-container">
 
             <div
-            class="note-author-meta-row"
-            onclick="routeToUserProfileQuery('${note.user}')">
-
-                <img
-                src="${avatar}"
-                class="note-author-img-thumb">
-
-                <span>@${note.user}</span>
+                id="notes-wall-mount-point"
+                class="notes-horizontal-scroller">
 
             </div>
 
         </div>
 
-        `;
+        <!-- Create Post -->
 
-    });
+        <div class="create-post-card">
 
-}
-    function startRealtimeUsersListener(){
+            <div class="create-post-input-area">
 
-    if(usersRealtimeListener){
+                <img
+                    id="create-post-avatar-preview"
+                    class="create-post-creator-avatar"
+                    src="https://img.icons8.com/fluency/96/user-male-circle.png">
 
-        usersRealtimeListener();
+                <textarea
+                    id="create-post-textarea-field"
+                    placeholder="بماذا تفكر؟">
+                </textarea>
 
-    }
+            </div>
 
-    usersRealtimeListener=
+            <div
+                id="post-media-preview-container-box"
+                class="upload-preview-wrapper">
 
-    db.collection("users")
+                <button
+                    id="clear-selected-media-preview-btn"
+                    class="clear-preview-btn">
 
-    .onSnapshot(snapshot=>{
+                    ✕
 
-        globalUsersProfileMap={};
+                </button>
 
-        snapshot.forEach(doc=>{
+                <div id="post-media-preview-canvas"></div>
 
-            const data=doc.data();
+            </div>
 
-            globalUsersProfileMap[
-            data.username.toLowerCase()
-            ]=data.avatar;
+            <div class="create-post-action-row">
 
-        });
+                <label
+                    for="post-media-file-native-input"
+                    class="media-upload-custom-label">
 
-    });
+                    📷 صورة أو فيديو
 
-}
-    performApplicationDataBootstrap()
-    startRealtimePostsListener();
+                </label>
 
-startRealtimeNotesListener();
+                <input
+                    id="post-media-file-native-input"
+                    type="file"
+                    accept="image/*,video/*"
+                    style="display:none;">
 
-startRealtimeUsersListener();
-    logout()
-    if(postsRealtimeListener)
-postsRealtimeListener();
+                <button
+                    id="publish-new-post-final-btn"
+                    class="btn-action-primary">
 
-if(notesRealtimeListener)
-notesRealtimeListener();
+                    نشر
 
-if(usersRealtimeListener)
-usersRealtimeListener();
-    
-    isRendering = false;
-}
-    <div id="connection-status">
-🟢 متصل
+                </button>
+
+            </div>
+
+        </div>
+
+        <!-- Feed -->
+
+        <div id="timeline-posts-feed-stream">
+
+        </div>
+
+    </div>
+        <!-- ========================= -->
+    <!-- Reels View -->
+    <!-- ========================= -->
+
+    <div
+        id="view-panel-reels"
+        class="app-view-panel">
+
+        <div
+            id="reels-isolated-stream-mount"
+            class="reels-vertical-stream">
+
+        </div>
+
+    </div>
+
 </div>
-#connection-status{
 
-position:fixed;
+<!-- ========================= -->
+<!-- Floating Action Button -->
+<!-- ========================= -->
 
-top:75px;
+<button id="floating-create-post-btn">
+    +
+</button>
 
-left:50%;
+<!-- ========================= -->
+<!-- Firebase SDK -->
+<!-- ========================= -->
 
-transform:translateX(-50%);
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 
-background:#16a34a;
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
-color:white;
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
 
-padding:6px 16px;
+<script>
 
-border-radius:20px;
+//////////////////////////////////////////////////////
+// Firebase
+//////////////////////////////////////////////////////
 
-font-size:13px;
+const firebaseConfig = {
 
-z-index:99999;
+    apiKey: "AIzaSyA5SS9zdzj5N8oBMmjPgWvfSohdSBIRQ8c",
 
-transition:.3s;
+    authDomain: "friends7777.firebaseapp.com",
 
-}
-    window.addEventListener("offline",()=>{
+    projectId: "friends7777",
 
-const status=document.getElementById(
-"connection-status"
-);
+    storageBucket: "friends7777.appspot.com",
 
-status.innerHTML="🔴 لا يوجد اتصال";
+    messagingSenderId: "276918882465",
 
-status.style.background="#dc2626";
+    appId: "1:276918882465:web:f4c3c2df36295a71968560"
 
-});
+};
 
-window.addEventListener("online",()=>{
+firebase.initializeApp(firebaseConfig);
 
-const status=document.getElementById(
-"connection-status"
-);
+const db = firebase.firestore();
 
-status.innerHTML="🟢 متصل";
+const storage = firebase.storage();
 
-status.style.background="#16a34a";
+//////////////////////////////////////////////////////
+// Global Variables
+//////////////////////////////////////////////////////
 
-});
-    <button id="scroll-top-btn">⬆</button>
-    #scroll-top-btn{
-    position:fixed;
-    bottom:150px;
-    right:18px;
+let currentUser =
+localStorage.getItem("logged_user") || "";
 
-    width:48px;
-    height:48px;
+let globalPostsCache = [];
 
-    border:none;
-    border-radius:50%;
+let globalUsersProfileMap = {};
 
-    background:var(--accent-brand);
-    color:#fff;
+let globalFollowingCacheList = [];
 
-    font-size:20px;
+let activeAppTabContext = "home";
 
-    cursor:pointer;
+let stagedFileObjectForUpload = null;
 
-    display:none;
+//////////////////////////////////////////////////////
+// Infinite Scroll
+//////////////////////////////////////////////////////
 
-    z-index:99999;
+let lastVisiblePost = null;
 
-    box-shadow:0 6px 18px rgba(0,0,0,.25);
+let isLoadingMorePosts = false;
 
-    transition:.25s;
-}
+let allPostsLoaded = false;
 
-#scroll-top-btn:hover{
+//////////////////////////////////////////////////////
+// عند فتح الموقع
+//////////////////////////////////////////////////////
 
-    transform:scale(1.08);
+window.addEventListener("DOMContentLoaded", () => {
 
-}
-    const scrollBtn=document.getElementById("scroll-top-btn");
+    initializeApplicationThemeContext();
 
-window.addEventListener("scroll",()=>{
+    bindStaticInteractiveEventListeners();
 
-    if(window.scrollY>500){
+    if(currentUser){
 
-        scrollBtn.style.display="block";
+        document.getElementById(
+        "application-auth-overlay"
+        ).style.display="none";
+
+        performApplicationDataBootstrap();
 
     }else{
 
-        scrollBtn.style.display="none";
+        document.getElementById(
+        "application-auth-overlay"
+        ).style.display="flex";
 
     }
 
 });
 
-scrollBtn.onclick=()=>{
+//////////////////////////////////////////////////////
+// Theme
+//////////////////////////////////////////////////////
 
-    window.scrollTo({
+function initializeApplicationThemeContext(){
 
-        top:0,
+    const savedTheme =
+    localStorage.getItem("theme") || "light";
 
-        behavior:"smooth"
+    if(savedTheme==="dark"){
+
+        document.documentElement
+        .setAttribute("data-theme","dark");
+
+    }
+
+}
+
+function toggleApplicationThemeUX(){
+
+    const theme =
+    document.documentElement
+    .getAttribute("data-theme");
+
+    if(theme==="dark"){
+
+        document.documentElement
+        .removeAttribute("data-theme");
+
+        localStorage.setItem(
+        "theme",
+        "light"
+        );
+
+    }else{
+
+        document.documentElement
+        .setAttribute(
+        "data-theme",
+        "dark"
+        );
+
+        localStorage.setItem(
+        "theme",
+        "dark"
+        );
+
+    }
+
+}
+
+//////////////////////////////////////////////////////
+// Toast
+//////////////////////////////////////////////////////
+
+function displaySystemToast(
+message,
+type="success"
+){
+
+    const toast =
+    document.getElementById(
+    "system-notification-toast"
+    );
+
+    document.getElementById(
+    "toast-message-holder"
+    ).innerText=message;
+
+    toast.classList.add(
+    "toast-state-visible"
+    );
+
+    setTimeout(()=>{
+
+        toast.classList.remove(
+        "toast-state-visible"
+        );
+
+    },3000);
+
+}
+
+//////////////////////////////////////////////////////
+// Relative Time
+//////////////////////////////////////////////////////
+
+function calculateRelativeTimeDuration(time){
+
+    if(!time) return "الآن";
+
+    let diff =
+    Date.now()-time;
+
+    let sec =
+    Math.floor(diff/1000);
+
+    if(sec<60)
+    return "الآن";
+
+    let min =
+    Math.floor(sec/60);
+
+    if(min<60)
+    return min+" دقيقة";
+
+    let hr =
+    Math.floor(min/60);
+
+    if(hr<24)
+    return hr+" ساعة";
+
+    let day =
+    Math.floor(hr/24);
+
+    return day+" يوم";
+
+}
+
+//////////////////////////////////////////////////////
+// Profile
+//////////////////////////////////////////////////////
+
+function routeToUserProfileQuery(user){
+
+    if(!user)return;
+
+    window.location.href=
+    "profile.html?user="+
+    encodeURIComponent(user);
+
+}
+
+//////////////////////////////////////////////////////
+// Authentication
+//////////////////////////////////////////////////////
+
+async function manualLogin(){
+
+    const username=
+    document.getElementById(
+    "auth-login-username"
+    ).value.trim().toLowerCase();
+
+    const password=
+    document.getElementById(
+    "auth-login-password"
+    ).value;
+
+    if(!username || !password){
+
+        displaySystemToast(
+        "أدخل البيانات"
+        );
+
+        return;
+
+    }
+
+    const doc=
+    await db.collection("users")
+    .doc(username)
+    .get();
+
+    if(!doc.exists){
+
+        displaySystemToast(
+        "المستخدم غير موجود"
+        );
+
+        return;
+
+    }
+
+    if(doc.data().password!==password){
+
+        displaySystemToast(
+        "كلمة المرور غير صحيحة"
+        );
+
+        return;
+
+    }
+
+    currentUser=username;
+
+    localStorage.setItem(
+    "logged_user",
+    username
+    );
+
+    document.getElementById(
+    "application-auth-overlay"
+    ).style.display="none";
+
+    performApplicationDataBootstrap();
+
+}
+
+async function manualRegister(e){
+
+    e.preventDefault();
+
+    const username=
+    document.getElementById(
+    "auth-reg-username"
+    ).value.trim().toLowerCase();
+
+    const email=
+    document.getElementById(
+    "auth-reg-email"
+    ).value.trim();
+
+    const password=
+    document.getElementById(
+    "auth-reg-password"
+    ).value;
+
+    if(!username||!email||!password)
+    return;
+
+    const check=
+    await db.collection("users")
+    .doc(username)
+    .get();
+
+    if(check.exists){
+
+        displaySystemToast(
+        "اسم المستخدم مستخدم"
+        );
+
+        return;
+
+    }
+
+    await db.collection("users")
+    .doc(username)
+    .set({
+
+        username,
+
+        email,
+
+        password,
+
+        avatar:
+"https://img.icons8.com/fluency/96/user-male-circle.png",
+
+        bio:""
 
     });
 
-};
-    .feed-post-node-card{
+    currentUser=username;
 
-transition:.25s;
+    localStorage.setItem(
+    "logged_user",
+    username
+    );
 
-}
+    document.getElementById(
+    "application-auth-overlay"
+    ).style.display="none";
 
-.feed-post-node-card:hover{
-
-transform:translateY(-3px);
-
-box-shadow:0 14px 35px rgba(0,0,0,.08);
-
-}
-    .feed-post-node-card{
-
-animation:postFade .35s ease;
+    performApplicationDataBootstrap();
 
 }
 
-@keyframes postFade{
+function logout(){
 
-from{
+    localStorage.removeItem(
+    "logged_user"
+    );
 
-opacity:0;
+    location.reload();
 
-transform:translateY(25px);
+}
+    //////////////////////////////////////////////////////
+// Bootstrap Data
+//////////////////////////////////////////////////////
+
+async function performApplicationDataBootstrap() {
+
+    try {
+
+        // تحميل المستخدمين
+        const usersSnapshot =
+        await db.collection("users").get();
+
+        globalUsersProfileMap = {};
+
+        usersSnapshot.forEach(doc=>{
+            const data = doc.data();
+            globalUsersProfileMap[data.username] = data.avatar;
+        });
+
+        // تحميل المتابعة
+        const followDoc =
+        await db.collection("following")
+        .doc(currentUser).get();
+
+        globalFollowingCacheList =
+        followDoc.exists ? (followDoc.data().list || []) : [];
+
+        // تحميل أول بوستات
+        await loadInitialPosts();
+
+        // تحميل notes
+        await synchronizeInlineNotesWithCloud();
+
+    } catch(err){
+        console.error(err);
+    }
+}
+
+//////////////////////////////////////////////////////
+// Notes
+//////////////////////////////////////////////////////
+
+async function synchronizeInlineNotesWithCloud(){
+
+    const container =
+    document.getElementById("notes-wall-mount-point");
+
+    if(!container) return;
+
+    container.innerHTML = "";
+
+    const snap =
+    await db.collection("notes").get();
+
+    const notes = [];
+
+    snap.forEach(doc=>{
+        notes.push({id:doc.id,...doc.data()});
+    });
+
+    notes.sort((a,b)=>b.timestamp-a.timestamp);
+
+    notes.forEach(note=>{
+
+        const div = document.createElement("div");
+
+        div.className="note-card";
+
+        div.innerHTML=`
+            <b>@${note.user}</b>
+            <p>${note.text}</p>
+        `;
+
+        container.appendChild(div);
+
+    });
 
 }
 
-to{
+//////////////////////////////////////////////////////
+// Posts Feed Render (Basic Hook)
+//////////////////////////////////////////////////////
 
-opacity:1;
+function renderTimelinePostsFeed(posts){
 
-transform:none;
+    const container =
+    document.getElementById("timeline-posts-feed-stream");
 
-}
+    container.innerHTML = "";
 
-}
-    .interaction-trigger-node{
+    posts.forEach(post=>{
 
-transition:.2s;
+        const div =
+        document.createElement("div");
 
-}
+        div.className="feed-post-node-card";
 
-.interaction-trigger-node:active{
+        div.innerHTML=`
+            <b>@${post.author}</b>
+            <p>${post.content}</p>
+        `;
 
-transform:scale(.95);
+        container.appendChild(div);
 
-}
-    .post-embedded-media-frame{
-
-transition:.25s;
-
-}
-
-.post-embedded-media-frame:hover{
-
-transform:scale(1.01);
-
-}
-    .shimmer-placeholder-line{
-
-position:relative;
-
-overflow:hidden;
-
-background:#ececec;
+    });
 
 }
 
-.shimmer-placeholder-line::after{
+//////////////////////////////////////////////////////
+// Infinite Scroll System
+//////////////////////////////////////////////////////
 
-content:"";
+let lastVisiblePost = null;
+let isLoadingMorePosts = false;
+let allPostsLoaded = false;
 
-position:absolute;
+async function loadInitialPosts(){
 
-top:0;
+    const snap =
+    await db.collection("posts")
+    .orderBy("timestamp","desc")
+    .limit(10)
+    .get();
 
-left:-100%;
+    globalPostsCache = [];
 
-width:100%;
+    snap.forEach(doc=>{
+        globalPostsCache.push({
+            id:doc.id,
+            ...doc.data()
+        });
+    });
 
-height:100%;
+    renderTimelinePostsFeed(globalPostsCache);
 
-background:linear-gradient(
+    lastVisiblePost =
+    snap.docs[snap.docs.length-1];
 
-90deg,
+}
 
-transparent,
+async function loadMorePosts(){
 
-rgba(255,255,255,.7),
+    if(!lastVisiblePost || isLoadingMorePosts || allPostsLoaded)
+    return;
 
-transparent
+    isLoadingMorePosts = true;
 
+    const snap =
+    await db.collection("posts")
+    .orderBy("timestamp","desc")
+    .startAfter(lastVisiblePost)
+    .limit(10)
+    .get();
+
+    if(snap.empty){
+        allPostsLoaded = true;
+        return;
+    }
+
+    snap.forEach(doc=>{
+        globalPostsCache.push({
+            id:doc.id,
+            ...doc.data()
+        });
+    });
+
+    lastVisiblePost =
+    snap.docs[snap.docs.length-1];
+
+    renderTimelinePostsFeed(globalPostsCache);
+
+    isLoadingMorePosts = false;
+
+}
+
+//////////////////////////////////////////////////////
+// Scroll Listener
+//////////////////////////////////////////////////////
+
+window.addEventListener("scroll", async ()=>{
+
+    if(activeAppTabContext !== "home") return;
+
+    const scrollPos =
+    window.innerHeight + window.scrollY;
+
+    const pageHeight =
+    document.body.offsetHeight;
+
+    if(scrollPos >= pageHeight - 200){
+
+        await loadMorePosts();
+
+    }
+
+});
+
+//////////////////////////////////////////////////////
+// Search (Debounce)
+//////////////////////////////////////////////////////
+
+function debounce(func, delay){
+
+    let timeout;
+
+    return function(...args){
+
+        clearTimeout(timeout);
+
+        timeout = setTimeout(()=>{
+
+            func.apply(this,args);
+
+        },delay);
+
+    }
+
+}
+
+function executeRealtimeContentSearchFilter(){
+
+    const q =
+    document.getElementById("app-content-search-field")
+    .value.toLowerCase();
+
+    const filtered =
+    globalPostsCache.filter(p=>
+        (p.content||"").toLowerCase().includes(q) ||
+        (p.author||"").toLowerCase().includes(q)
+    );
+
+    renderTimelinePostsFeed(filtered);
+
+}
+
+document
+.getElementById("app-content-search-field")
+.addEventListener(
+    "input",
+    debounce(executeRealtimeContentSearchFilter,300)
 );
 
-animation:loading 1s infinite;
+//////////////////////////////////////////////////////
+// Floating Button
+//////////////////////////////////////////////////////
 
-}
+document
+.getElementById("floating-create-post-btn")
+.addEventListener("click", ()=>{
 
-@keyframes loading{
+    const text = prompt("اكتب منشور:");
 
-100%{
+    if(!text) return;
 
-left:100%;
-
-}
-
-}
-    document.addEventListener("click",e=>{
-
-if(
-
-e.target.classList.contains(
-
-"post-embedded-media-frame"
-
-)
-
-){
-
-e.target.animate([
-
-{
-
-transform:"scale(1)"
-
-},
-
-{
-
-transform:"scale(.96)"
-
-},
-
-{
-
-transform:"scale(1)"
-
-}
-
-],{
-
-duration:180
+    db.collection("posts").add({
+        author: currentUser,
+        content: text,
+        timestamp: Date.now(),
+        likedBy: [],
+        comments: []
+    }).then(loadInitialPosts);
 
 });
+        //////////////////////////////////////////////////////
+// LIKE SYSTEM
+//////////////////////////////////////////////////////
+
+async function executeLikeTransaction(postId, currentLikes){
+
+    let updatedLikes = [...(currentLikes || [])];
+
+    if(updatedLikes.includes(currentUser)){
+        updatedLikes = updatedLikes.filter(u=>u!==currentUser);
+    }else{
+        updatedLikes.push(currentUser);
+    }
+
+    await db.collection("posts").doc(postId)
+    .update({ likedBy: updatedLikes });
+
+    await loadInitialPosts();
+}
+
+//////////////////////////////////////////////////////
+// FOLLOW SYSTEM
+//////////////////////////////////////////////////////
+
+async function executeFollowStateToggle(targetUser){
+
+    if(!globalFollowingCacheList.includes(targetUser)){
+        globalFollowingCacheList.push(targetUser);
+    }else{
+        globalFollowingCacheList =
+        globalFollowingCacheList.filter(u=>u!==targetUser);
+    }
+
+    await db.collection("following")
+    .doc(currentUser)
+    .set({ list: globalFollowingCacheList });
 
 }
+
+//////////////////////////////////////////////////////
+// COMMENTS SYSTEM
+//////////////////////////////////////////////////////
+
+async function addComment(postId, text){
+
+    const postRef =
+    db.collection("posts").doc(postId);
+
+    const postSnap =
+    await postRef.get();
+
+    const postData = postSnap.data();
+
+    const newComments = [
+        ...(postData.comments || []),
+        {
+            user: currentUser,
+            text,
+            timestamp: Date.now()
+        }
+    ];
+
+    await postRef.update({
+        comments: newComments
+    });
+
+    await loadInitialPosts();
+}
+
+//////////////////////////////////////////////////////
+// DELETE COMMENT
+//////////////////////////////////////////////////////
+
+async function deleteComment(postId, index){
+
+    const postRef =
+    db.collection("posts").doc(postId);
+
+    const postSnap =
+    await postRef.get();
+
+    const postData = postSnap.data();
+
+    const updated = postData.comments.filter((_,i)=>i!==index);
+
+    await postRef.update({
+        comments: updated
+    });
+
+    await loadInitialPosts();
+}
+
+//////////////////////////////////////////////////////
+// MEDIA UPLOAD (IMAGE / VIDEO)
+//////////////////////////////////////////////////////
+
+async function uploadMedia(file){
+
+    const ref =
+    storage.ref().child(
+        "posts/" + Date.now() + "_" + file.name
+    );
+
+    const snap = await ref.put(file);
+
+    const url = await snap.ref.getDownloadURL();
+
+    return url;
+}
+
+//////////////////////////////////////////////////////
+// CREATE POST WITH MEDIA
+//////////////////////////////////////////////////////
+
+async function createPostWithMedia(text, file){
+
+    let mediaUrl = null;
+    let mediaType = null;
+
+    if(file){
+
+        mediaUrl = await uploadMedia(file);
+
+        mediaType =
+        file.type.startsWith("video")
+        ? "video"
+        : "image";
+
+    }
+
+    await db.collection("posts").add({
+        author: currentUser,
+        content: text,
+        media: mediaUrl,
+        mediaType: mediaType,
+        timestamp: Date.now(),
+        likedBy: [],
+        comments: []
+    });
+
+    await loadInitialPosts();
+}
+
+//////////////////////////////////////////////////////
+// LIGHTBOX
+//////////////////////////////////////////////////////
+
+function openMediaLightbox(url){
+
+    const box =
+    document.getElementById("global-media-lightbox");
+
+    const mount =
+    document.getElementById("lightbox-mount-point");
+
+    box.style.display = "flex";
+
+    mount.innerHTML = `
+        <img src="${url}" style="max-width:95%;max-height:90vh;">
+    `;
+}
+
+box.addEventListener("click", ()=>{
+
+    box.style.display = "none";
 
 });
-    .app-view-panel{
+            //////////////////////////////////////////////////////
+// REELS SYSTEM
+//////////////////////////////////////////////////////
 
-animation:viewFade .3s;
+function renderIsolatedReelsStream(){
+
+    const container =
+    document.getElementById("reels-isolated-stream-mount");
+
+    if(!container) return;
+
+    container.innerHTML = "";
+
+    const videos =
+    globalPostsCache.filter(p=>p.mediaType==="video");
+
+    if(videos.length===0){
+        container.innerHTML =
+        `<div style="text-align:center;padding:40px;color:#777">
+            لا توجد فيديوهات
+        </div>`;
+        return;
+    }
+
+    videos.forEach(video=>{
+
+        const div = document.createElement("div");
+        div.className = "reel-card";
+
+        div.innerHTML = `
+            <video
+                src="${video.media}"
+                class="reel-video"
+                loop
+                muted
+                playsinline
+            ></video>
+
+            <div class="reel-info">
+                <b>@${video.author}</b>
+                <p>${video.content || ""}</p>
+            </div>
+        `;
+
+        container.appendChild(div);
+
+    });
+
+    enableReelsAutoPlay();
+}
+
+//////////////////////////////////////////////////////
+// AUTO PLAY REELS (TikTok Effect)
+//////////////////////////////////////////////////////
+
+function enableReelsAutoPlay(){
+
+    const videos =
+    document.querySelectorAll(".reel-video");
+
+    const observer =
+    new IntersectionObserver(entries=>{
+
+        entries.forEach(entry=>{
+
+            const video = entry.target;
+
+            if(entry.isIntersecting){
+                video.play();
+            }else{
+                video.pause();
+            }
+
+        });
+
+    },{ threshold: 0.7 });
+
+    videos.forEach(v=>observer.observe(v));
 
 }
 
-@keyframes viewFade{
+//////////////////////////////////////////////////////
+// REFRESH REELS WHEN TAB OPEN
+//////////////////////////////////////////////////////
 
-from{
+function openReelsTab(){
 
-opacity:0;
+    activeAppTabContext = "reels";
 
-transform:translateY(15px);
-
-}
-
-to{
-
-opacity:1;
-
-transform:none;
+    renderIsolatedReelsStream();
 
 }
 
+//////////////////////////////////////////////////////
+// CLICK LIKE INSIDE REELS (optional hook)
+//////////////////////////////////////////////////////
+
+async function likeReel(postId, likes){
+
+    let updated = [...(likes || [])];
+
+    if(updated.includes(currentUser)){
+        updated = updated.filter(u=>u!==currentUser);
+    }else{
+        updated.push(currentUser);
+    }
+
+    await db.collection("posts")
+    .doc(postId)
+    .update({ likedBy: updated });
+
+    await synchronizePostsFeedWithCloud();
+
 }
-    #create-post-textarea-field{
+        //////////////////////////////////////////////////////
+// COMMENTS BOTTOM SHEET
+//////////////////////////////////////////////////////
 
-transition:.25s;
+let activeCommentPostId = null;
 
-    
+function openCommentsBottomSheetComponent(postId, comments){
+
+    activeCommentPostId = postId;
+
+    const sheet =
+    document.getElementById("global-comments-sheet-container");
+
+    const backdrop =
+    document.getElementById("comments-modal-backdrop");
+
+    const container =
+    document.getElementById("comments-rendering-wall-mount");
+
+    const title =
+    document.getElementById("comments-panel-counter-title");
+
+    sheet.classList.add("sheet-state-open");
+    backdrop.classList.add("backdrop-state-visible");
+
+    title.innerText = `التعليقات (${comments.length})`;
+
+    container.innerHTML = "";
+
+    if(!comments || comments.length === 0){
+        container.innerHTML = `
+            <div style="text-align:center;padding:20px;color:#777">
+                لا توجد تعليقات
+            </div>
+        `;
+    }
+
+    comments.forEach((c,index)=>{
+
+        const div = document.createElement("div");
+        div.className = "comment-node";
+
+        div.innerHTML = `
+            <b>@${c.user}</b>
+            <p>${c.text}</p>
+
+            <button onclick="removeComment(${index})">
+                حذف
+            </button>
+        `;
+
+        container.appendChild(div);
+
+    });
+
+    const footer =
+    document.getElementById("comments-action-footer-zone");
+
+    footer.innerHTML = `
+        <input id="comment-input" placeholder="اكتب تعليق...">
+        <button onclick="submitComment()">
+            إرسال
+        </button>
+    `;
+
 }
 
-#create-post-textarea-fiel
-    d:focus{
+//////////////////////////////////////////////////////
+// CLOSE SHEET
+//////////////////////////////////////////////////////
 
-background:var(--bg-input);
+function closeGlobalCommentsBottomSheet(){
 
-border-radius:12px;
+    document
+    .getElementById("global-comments-sheet-container")
+    .classList.remove("sheet-state-open");
 
-padding:10px;
+    document
+    .getElementById("comments-modal-backdrop")
+    .classList.remove("backdrop-state-visible");
+
+    activeCommentPostId = null;
+
 }
-   dispatchNewPostWithStorageIntegration()
-    publishButtonNode.innerHTML="⏳ جاري النشر...";
-    publishButtonNode.innerHTML="نشر المنشور";
-    
+
+//////////////////////////////////////////////////////
+// ADD COMMENT
+//////////////////////////////////////////////////////
+
+async function submitComment(){
+
+    const input =
+    document.getElementById("comment-input");
+
+    const text = input.value.trim();
+
+    if(!text || !activeCommentPostId) return;
+
+    const ref =
+    db.collection("posts").doc(activeCommentPostId);
+
+    const snap = await ref.get();
+
+    const data = snap.data();
+
+    const newComments = [
+        ...(data.comments || []),
+        {
+            user: currentUser,
+            text,
+            timestamp: Date.now()
+        }
+    ];
+
+    await ref.update({ comments: newComments });
+
+    input.value = "";
+
+    await synchronizePostsFeedWithCloud();
+
+    openCommentsBottomSheetComponent(activeCommentPostId, newComments);
+
+}
+
+//////////////////////////////////////////////////////
+// REMOVE COMMENT
+//////////////////////////////////////////////////////
+
+async function removeComment(index){
+
+    if(!activeCommentPostId) return;
+
+    const ref =
+    db.collection("posts").doc(activeCommentPostId);
+
+    const snap = await ref.get();
+
+    const data = snap.data();
+
+    const updated =
+    data.comments.filter((_,i)=>i!==index);
+
+    await ref.update({ comments: updated });
+
+    await synchronizePostsFeedWithCloud();
+
+    openCommentsBottomSheetComponent(activeCommentPostId, updated);
+
+}
+
+//////////////////////////////////////////////////////
+// BACKDROP CLICK CLOSE
+//////////////////////////////////////////////////////
+
+document
+.getElementById("comments-modal-backdrop")
+.addEventListener("click", closeGlobalCommentsBottomSheet);
+
+document
+.getElementById("dismiss-comments-sheet-trigger")
+.addEventListener("click", closeGlobalCommentsBottomSheet);
+
+//////////////////////////////////////////////////////
+// INIT HOOK (FINAL FIX)
+//////////////////////////////////////////////////////
+
+function initAppFixes(){
+
+    if(currentUser){
+
+        performApplicationDataBootstrap();
+
+    }
+
+}
+
+initAppFixes();
+}
+
+}
