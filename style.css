@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Friends Ultra-Clean UI Stylesheet - 2026 Edition
+   Friends Ultra-Clean Global UI Stylesheet - 2026 Edition
    ========================================================================== */
 
 :root {
@@ -41,7 +41,7 @@
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "Cairo", sans-serif;
     -webkit-tap-highlight-color: transparent;
 }
 
@@ -52,14 +52,17 @@ body {
     padding-top: 65px;
     padding-bottom: 75px;
     transition: background-color 0.3s, color 0.3s;
+    text-align: start; /* يتكيف تلقائياً مع اتجاه اللغة */
 }
 
-/* --- الهيدر العلوي النظيف --- */
+/* --- الهيدر العلوي النظيف ذو التأثير الزجاجي --- */
 .main-header {
     position: fixed;
     top: 0; left: 0; right: 0;
     height: 60px;
-    background-color: var(--bg-surface);
+    background-color: rgba(var(--bg-surface), 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--border-color);
     display: flex;
     justify-content: space-between;
@@ -99,7 +102,8 @@ body {
 
 .circle-btn .badge {
     position: absolute;
-    top: -2px; right: -2px;
+    top: -2px; 
+    inset-inline-end: -2px; /* يدعم العربي والإنجليزي مرناً */
     background-color: var(--error-color);
     color: white;
     font-size: 10px;
@@ -274,7 +278,7 @@ body {
 }
 .close-preview {
     position: absolute;
-    top: 8px; right: 8px;
+    top: 8px; inset-inline-end: 8px; /* مرن عالمياً */
     background: rgba(0,0,0,0.6);
     color: white;
     border: none;
@@ -310,7 +314,7 @@ body {
 }
 .btn-primary:hover { background-color: var(--accent-hover); }
 
-/* --- كروت عرض المنشورات (تايملاين مطابق لتصميمك) --- */
+/* --- كروت عرض المنشورات (تايملاين) --- */
 .feed-card {
     background-color: var(--bg-surface);
     border-radius: var(--radius-lg);
@@ -438,7 +442,8 @@ body {
 }
 .close-sheet {
     position: absolute;
-    top: 14px; left: 16px;
+    top: 14px; 
+    inset-inline-start: 16px; /* مرن للتنقل العالمي */
     font-size: 20px; cursor: pointer;
 }
 .sheet-body { flex: 1; overflow-y: auto; padding: 16px; }
@@ -469,12 +474,14 @@ body {
     outline: none;
 }
 
-/* --- شريط التنقل السفلي الاحترافي --- */
+/* --- شريط التنقل السفلي الزجاجي --- */
 .bottom-nav {
     position: fixed;
     bottom: 0; left: 0; right: 0;
     height: 60px;
-    background-color: var(--bg-surface);
+    background-color: rgba(var(--bg-surface), 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     border-top: 1px solid var(--border-color);
     display: flex;
     justify-content: space-around;
@@ -501,7 +508,14 @@ body {
     display: flex; align-items: center; justify-content: center;
 }
 #lightbox-img { max-width: 95%; max-height: 85vh; border-radius: var(--radius-sm); }
-.close-lightbox { position: absolute; top: 20px; right: 20px; color: #fff; font-size: 30px; cursor: pointer; }
+.close-lightbox { 
+    position: absolute; 
+    top: 20px; 
+    inset-inline-end: 20px; /* مرن عالمياً */
+    color: #fff; 
+    font-size: 30px; 
+    cursor: pointer; 
+}
 
 /* --- الـ Shimmer Effect الذكي للتحميل --- */
 .shimmer-card { background-color: var(--bg-surface); border-radius: var(--radius-lg); padding: 20px; border: 1px solid var(--border-color); }
