@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Friends - Profile</title>
+    <title>Friends - Profile & Settings</title>
+    <!-- ربط ملف الستايل الموحد للمنصة -->
     <link rel="stylesheet" href="style.css">
     <style>
         /* ستايل مخصص ومميز لعناصر البروفايل الفريدة */
@@ -106,10 +107,78 @@
             padding: 0 4px;
             color: var(--text-primary);
         }
+
+        /* نافذة الإعدادات المنبثقة الفخمة (Modal) */
+        .settings-modal {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2500;
+            padding: 16px;
+        }
+        .settings-modal.open {
+            display: flex;
+        }
+        .modal-content {
+            background-color: var(--bg-surface);
+            border-radius: var(--radius-lg);
+            width: 100%;
+            max-width: 450px;
+            padding: 24px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 12px;
+        }
+        .modal-header h3 { font-size: 18px; font-weight: 700; }
+        .close-modal { font-size: 24px; cursor: pointer; color: var(--text-secondary); }
+        
+        .setting-group {
+            margin-bottom: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .setting-group label { font-size: 13px; font-weight: 600; color: var(--text-secondary); }
+        .setting-group input, .setting-group textarea {
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+            outline: none;
+            font-size: 14px;
+        }
+        .privacy-toggle-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-top: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+            margin: 16px 0;
+        }
+        .avatar-edit-options {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
     </style>
 </head>
 <body>
 
+    <!-- الهيدر العلوي الزجاجي الثابت -->
     <header class="main-header">
         <a href="index.html" class="app-logo">Friends</a>
         <div class="header-left">
@@ -117,18 +186,23 @@
         </div>
     </header>
 
+    <!-- الحاوية المخصصة للملف الشخصي -->
     <main class="profile-container">
         
+        <!-- بطاقة بيانات المستخدم (Profile Card) -->
         <section class="profile-header-card">
+            <!-- غلاف البروفايل -->
             <div class="cover-photo-wrapper">
                 <div class="cover-photo"></div>
             </div>
             
+            <!-- الصورة الشخصية والاسم والبيو -->
             <div class="profile-avatar-area">
                 <img src="https://www.gravatar.com/avatar/?d=mp" alt="User Avatar" class="big-avatar" id="profile-page-avatar">
                 <h2 class="user-profile-name" id="profile-page-name">Loading...</h2>
                 <p class="user-bio" id="profile-page-bio">No bio available yet.</p>
                 
+                <!-- عدادات المتابعين -->
                 <div class="stats-row">
                     <div class="stat-box">
                         <div class="number" id="posts-count">0</div>
@@ -144,6 +218,7 @@
                     </div>
                 </div>
 
+                <!-- أزرار التحكم بالبروفايل -->
                 <div class="profile-actions">
                     <button class="btn-primary" style="flex: 2;" id="edit-profile-trigger-btn">Edit Profile</button>
                     <button class="btn-secondary" id="logout-btn">Logout</button>
@@ -151,6 +226,7 @@
             </div>
         </section>
 
+        <!-- خلاصة منشورات المستخدم الشخصية فقط -->
         <div class="user-posts-heading">My Moments</div>
         <section id="user-own-posts-feed">
             <div class="shimmer-card">
@@ -161,11 +237,54 @@
 
     </main>
 
+    <!-- نافذة تعديل الحساب المتقدمة (Edit Profile Modal) -->
+    <div class="settings-modal" id="profile-settings-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Account Settings</h3>
+                <span class="close-modal" id="close-settings-modal">&times;</span>
+            </div>
+            
+            <!-- خيارات الصورة الشخصية -->
+            <label style="font-size: 13px; font-weight: 600; color: var(--text-secondary); display:block; margin-bottom:8px;">Profile Photo</label>
+            <div class="avatar-edit-options">
+                <label class="btn-primary" style="font-size:12px; cursor:pointer; text-align:center; flex:1;">
+                    📷 Change Photo
+                    <input type="file" id="profile-avatar-upload" accept="image/*" style="display: none;">
+                </label>
+                <button class="btn-secondary" style="margin:0;" id="delete-avatar-btn">🗑️ Remove</button>
+            </div>
+
+            <!-- تعديل البيانات النصية -->
+            <div class="setting-group">
+                <label for="edit-username">Username</label>
+                <input type="text" id="edit-username" placeholder="Your Name">
+            </div>
+            <div class="setting-group">
+                <label for="edit-bio">Bio</label>
+                <textarea id="edit-bio" rows="3" placeholder="Tell us about yourself..."></textarea>
+            </div>
+
+            <!-- إعدادات خصوصية الحساب (عام / خاص) -->
+            <div class="privacy-toggle-row">
+                <div>
+                    <div style="font-size: 14px; font-weight: 700;">Private Account</div>
+                    <div style="font-size: 11px; color: var(--text-secondary);">Only approved followers can see your posts</div>
+                </div>
+                <input type="checkbox" id="privacy-toggle-switch" style="width: 20px; height: 20px; cursor: pointer;">
+            </div>
+
+            <button class="btn-primary" style="width: 100%; padding: 12px;" id="save-profile-settings-btn">Save Changes</button>
+        </div>
+    </div>
+
+    <!-- التوست الإشعاري المنسق -->
     <div class="toast" id="app-toast">
         <span class="toast-icon">✨</span>
         <span class="toast-text-message">Done</span>
     </div>
 
+    <!-- شريط التنقل السفلي الزجاجي للموبايل -->
     <nav class="bottom-nav">
         <a href="index.html" class="nav-item">
             <span>🏠</span>Home
@@ -178,6 +297,18 @@
         </a>
     </nav>
 
+    <!-- ربط محرك الـ JS المطور لتشغيل الفايربيز والإعدادات -->
     <script type="module" src="app.js"></script>
+    <script>
+        // أنميشن فتح وغلق نافذة الإعدادات بشكل سريع ومباشر
+        const modal = document.getElementById("profile-settings-modal");
+        document.getElementById("edit-profile-trigger-btn").addEventListener("click", () => {
+            // ملء الحقول بالبيانات الحالية قبل الفتح
+            document.getElementById("edit-username").value = document.getElementById("profile-page-name").innerText;
+            document.getElementById("edit-bio").value = document.getElementById("profile-page-bio").innerText;
+            modal.classList.add("open");
+        });
+        document.getElementById("close-settings-modal").addEventListener("click", () => modal.classList.remove("open"));
+    </script>
 </body>
 </html>
