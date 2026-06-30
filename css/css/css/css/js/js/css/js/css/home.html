@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الرئيسية | Friends لايف</title>
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/animations.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/home.css">
+</head>
+<body class="animate-fade-in-up">
+
+    <div id="app-toast" class="custom-toast">
+        <div class="toast-icon-wrapper" style="background: var(--accent-light);">
+            <span class="toast-icon">✨</span>
+        </div>
+        <div class="toast-message-text">جاري معالجة المنشور...</div>
+    </div>
+
+    <header class="main-platform-header">
+        <div class="header-right-side">
+            <span class="platform-brand-logo">Friends</span>
+            <div class="algorithm-badge">⏱️ وصول كامل زمني 100%</div>
+        </div>
+        <div class="header-left-side">
+            <button class="action-circle-btn" onclick="window.location.href='chat.html'" title="المحادثات والدعم البشري">💬</button>
+            <img src="https://www.gravatar.com/avatar/?d=mp" id="header-user-avatar" class="header-profile-avatar" onclick="window.location.href='profile.html'" title="ملفي الشخصي ومتجري">
+        </div>
+    </header>
+
+    <main class="timeline-main-container">
+        
+        <section class="publish-content-card">
+            <div class="publish-upper-row">
+                <img src="https://www.gravatar.com/avatar/?d=mp" id="publish-box-avatar" class="box-user-avatar">
+                <textarea id="timeline-post-textarea" placeholder="شارك أفكارك أو خدماتك الحين.. محتواك سيصل لـ 100% من متابعيك بدون حجب خوارزميات! 🚀"></textarea>
+            </div>
+            <div class="publish-lower-actions">
+                <div class="privacy-notice-tag">🔒 بيئة تصفح نظيفة ومحمية</div>
+                <button id="timeline-publish-submit-btn" class="base-btn btn-accent btn-pulse" style="padding: 6px 20px; font-size: 13px;">
+                    نشر المنشور فوراً
+                </button>
+            </div>
+        </section>
+
+        <section id="timeline-live-feed-wrapper" class="feed-stream-layout">
+            <div style="text-align: center; padding: 40px; color: var(--text-secondary);">جاري فتح اتصال زمني آمن...</div>
+        </section>
+
+    </main>
+
+    <nav class="mobile-fixed-bottom-nav">
+        <a href="home.html" class="bottom-nav-link active">
+            <span class="nav-icon-span">🏠</span>
+            <span class="nav-text-span">الرئيسية</span>
+        </a>
+        <a href="chat.html" class="bottom-nav-link">
+            <span class="nav-icon-span">💬</span>
+            <span class="nav-text-span">الرسائل</span>
+        </a>
+        <a href="profile.html" class="bottom-nav-link">
+            <span class="nav-icon-span">💼</span>
+            <span class="nav-text-span">متجري</span>
+        </a>
+    </nav>
+
+    <script type="module" src="js/posts.js"></script>
+</body>
+</html>
