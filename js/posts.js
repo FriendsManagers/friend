@@ -1,11 +1,10 @@
 /* ==========================================================================
-   Friends Platform - Live Timeline & Anti-Filter Feed Engine (2026 Production)
+   Friends Platform - Upgraded Timeline Engine (Likes, Comments & Delete)
    ========================================================================== */
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { 
-  getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, getDoc 
+  getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, getDoc, deleteDoc, updateDoc, arrayUnion, arrayRemove
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -22,132 +21,147 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 let currentUserData = null;
+let myUid = null;
 
 document.addEventListener("DOMContentLoaded", () => {
     onAuthStateChanged(auth, async (user) => {
         if (!user) {
-            window.location.href = "login.html";
+            window.location.href = "index.html";
         } else {
-            // جلب ملف المستخدم الحالي لتركيب الصور والشارات الحقيقية بالهيدر
-            await fetchCurrentUserInfo(user.uid);
+            myUid = user.uid;
+            await fetchCurrentUserInfo(myUid);
             listenToAntiFilterTimeline();
             setupPostSubmission();
         }
     });
 });
 
-/* ================= جلب بيانات المستخدم لإنعاش الهيدر وصندوق النشر ================= */
 async function fetchCurrentUserInfo(uid) {
     try {
         const snap = await getDoc(doc(db, "users", uid));
         if (snap.exists()) {
             currentUserData = snap.data();
-            const avatarUrl = currentUserData.avatar || "https://www.gravatar.com/avatar/?d=mp";
-            
-            if(document.getElementById("header-user-avatar")) document.getElementById("header-user-avatar").src = avatarUrl;
-            if(document.getElementById("publish-box-avatar")) document.getElementById("publish-box-avatar").src = avatarUrl;
+            if(document.getElementById("header-user-avatar")) document.getElementById("header-user-avatar").src = currentUserData.avatar || "https://www.gravatar.com/avatar/?d=mp";
+            if(document.getElementById("publish-box-avatar")) document.getElementById("publish-box-avatar").src = currentUserData.avatar || "https://www.gravatar.com/avatar/?d=mp";
         }
-    } catch (e) {
-        console.error("خطأ في تحميل بيانات الهيدر:", e);
-    }
+    } catch (e) { console.error(e); }
 }
 
-/* ================= معالجة وضخ منشور جديد على السيرفر لايف ================= */
 function setupPostSubmission() {
     const btn = document.getElementById("timeline-publish-submit-btn");
     const textarea = document.getElementById("timeline-post-textarea");
     if (!btn || !textarea) return;
 
-    btn.addEventListener("click", async () => {
+    btn.onclick = async () => {
         const text = textarea.value.trim();
         if (!text) return;
 
-        btn.disabled = true;
-        btn.innerText = "جاري النشر زمني...";
-
         try {
-            // نشر الكود محتوياً على شارات التوثيق الجداري المأخوذة من حسابك الحقيقي
             await addDoc(collection(db, "posts"), {
                 text: text,
-                authorId: auth.currentUser.uid,
+                authorId: myUid,
                 authorName: currentUserData ? currentUserData.name : "عضو موثق",
                 isVerified: currentUserData ? currentUserData.isVerified : true,
                 isProAccount: currentUserData ? (currentUserData.isProAccount || currentUserData.hasMarketplace) : false,
+                likes: [],
+                comments: [],
                 createdAt: serverTimestamp()
             });
-
             textarea.value = "";
-            showTimelineToast("تم نشر محتواك ووصوله لـ 100% من المجتمع الحين! 🚀", "✅");
-        } catch (error) {
-            showTimelineToast("فشل النشر، يرجى فحص الشبكة والمحاولة مجدداً.", "❌");
-        }
-        btn.disabled = false;
-        btn.innerText = "نشر المنشور فوراً";
-    });
+        } catch (e) { alert("حدث خطأ أثناء النشر"); }
+    };
 }
 
-/* ================= ميزة الوصول الكامل: الاستماع للتايملاين الزمني النقي ================= */
 function listenToAntiFilterTimeline() {
     const container = document.getElementById("timeline-live-feed-wrapper");
-    // استعلام زمني صارم ومرتب تنازلياً من الأحدث للأقدم بدون تدخل خوارزميات حجب الدفع
     const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
 
     onSnapshot(q, (snapshot) => {
         const posts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        
         if (posts.length === 0) {
-            container.innerHTML = `<p style="text-align:center; padding:40px; color:var(--text-secondary); font-size:14px;">التايملاين فارغ حالياً، كن أول من ينشر الحين! ✨</p>`;
+            container.innerHTML = `<p style="text-align:center; padding:20px; color:var(--text-secondary);">التايملاين فارغ حالياً...</p>`;
             return;
         }
 
-        let feedHTML = "";
+        container.innerHTML = posts.map((post) => {
+            const likesCount = post.likes ? post.likes.length : 0;
+            const hasLiked = post.likes && post.likes.includes(myUid);
+            const isMyPost = post.authorId === myUid;
 
-        posts.forEach((post, index) => {
-            // حساب الوقت بذكاء
-            const timeString = post.createdAt ? new Date(post.createdAt.seconds * 1000).toLocaleTimeString('ar-EG', {hour: '2-digit', minute:'2-digit'}) : "الآن";
-            
-            // ميزة شارة التوثيق المجانية القائمة على الجدارة الحقيقية
-            const verifiedBadge = post.isVerified ? `<span class="merit-verified-badge-inline" title="حساب موثق بجدارة وهوية حقيقية مجاناً">✓ موثق بجدارة</span>` : "";
-            
-            // شارة لتمييز الحساب الاحترافي صاحب المتجر الرقمي
-            const proBadge = post.isProAccount ? `<span class="pro-account-badge-inline">💼 محترف</span>` : "";
+            // كود إظهار زر الحذف فقط لو المنشور بتاعي
+            const deleteBtn = isMyPost ? `<button class="delete-post-btn" onclick="window.deletePlatformPost('${post.id}')">🗑️ حذف</button>` : "";
 
-            feedHTML += `
-                <article class="timeline-post-card animate-fade-in-up">
-                    <div class="post-card-header">
-                        <img src="https://www.gravatar.com/avatar/${post.authorId}?d=mp&s=100" class="card-author-avatar" onclick="window.location.href='profile.html?id=${post.authorId}'">
-                        <div class="card-author-meta-text">
-                            <h4 onclick="window.location.href='profile.html?id=${post.authorId}'">${post.authorName} ${verifiedBadge} ${proBadge}</h4>
-                            <span>تحديث زمني مباشر الحين ⏱️ ${timeString}</span>
+            // رص التعليقات الحالية
+            const commentsHTML = post.comments ? post.comments.map(c => `
+                <div class="single-comment-item">
+                    <strong>${c.authorName}:</strong> <span>${c.text}</span>
+                </div>
+            `).join("") : "";
+
+            return `
+                <article class="timeline-post-card">
+                    <div class="post-card-header" style="display:flex; justify-content:space-between; align-items:center;">
+                        <div style="display:flex; align-items:center; gap:12px;">
+                            <img src="https://www.gravatar.com/avatar/${post.authorId}?d=mp" class="card-author-avatar">
+                            <div class="card-author-meta-text">
+                                <h4>${post.authorName}</h4>
+                            </div>
                         </div>
+                        ${deleteBtn}
                     </div>
                     <div class="post-card-body-content">
                         <p>${post.text}</p>
                     </div>
+                    
+                    <!-- أزرار التفاعل (لايك / تفاعل) -->
+                    <div class="post-actions-bar" style="display:flex; gap:20px; margin-top:12px; border-top:1px solid var(--border-color); padding-top:8px;">
+                        <button onclick="window.togglePlatformLike('${post.id}', ${hasLiked})" style="background:none; border:none; cursor:pointer; color:${hasLiked ? 'var(--accent-color)' : 'var(--text-secondary)'}; font-weight:bold;">
+                            ${hasLiked ? '❤️ تم الإعجاب' : '🤍 لايك'} (${likesCount})
+                        </button>
+                    </div>
+
+                    <!-- صندوق التعليقات الذكي -->
+                    <div class="comments-section-wrapper" style="margin-top:10px; background:var(--bg-main); padding:10px; border-radius:var(--radius-sm);">
+                        <div class="rendered-comments-list">${commentsHTML}</div>
+                        <div class="comment-input-row" style="display:flex; gap:8px; margin-top:8px;">
+                            <input type="text" id="input-comm-${post.id}" placeholder="اكتب تعليقاً حقيقياً..." style="flex:1; padding:6px; border:1px solid var(--border-color); background:var(--bg-surface); color:var(--text-primary); border-radius:4px;">
+                            <button onclick="window.addPlatformComment('${post.id}')" style="background:var(--accent-color); color:#fff; border:none; padding:4px 12px; border-radius:4px; cursor:pointer;">تعليق</button>
+                        </div>
+                    </div>
                 </article>
             `;
-
-            /* ================= ميزة البيئة النظيفة: حَقن إعلان فخم ومريح كل 15 منشوراً ================= */
-            if ((index + 1) % 15 === 0) {
-                feedHTML += `
-                    <div class="clean-sponsored-card-box animate-fade-in-up">
-                        <span class="sponsored-top-tag">إعلان نظيف ومريح لمجتمع Friends 🔒</span>
-                        <h3>إعلان يدعم خصوصيتك الكاملة ولا يتتبع بياناتك</h3>
-                        <p>مساحة متوازنة تظهر برفق، لا تؤثر على تصفحك ولا نبيع بياناتك للشركات الخارجية.</p>
-                    </div>
-                `;
-            }
-        });
-
-        container.innerHTML = feedHTML;
+        }).join("");
     });
 }
 
-function showTimelineToast(msg, icon) {
-    const toast = document.getElementById("app-toast");
-    if(!toast) return;
-    toast.querySelector(".toast-message-text").innerText = msg;
-    toast.querySelector(".toast-icon").innerText = icon;
-    toast.classList.add("show");
-    setTimeout(() => toast.classList.remove("show"), 4000);
-}
+/* وظائف التفاعل العامة المربوطة بالـ Window لمنع الريفريش */
+window.deletePlatformPost = async (postId) => {
+    if(confirm("هل تريد حذف هذا المنشور نهائياً؟")) {
+        await deleteDoc(doc(db, "posts", postId));
+    }
+};
+
+window.togglePlatformLike = async (postId, hasLiked) => {
+    const postRef = doc(db, "posts", postId);
+    if(hasLiked) {
+        await updateDoc(postRef, { likes: arrayRemove(myUid) });
+    } else {
+        await updateDoc(postRef, { likes: arrayUnion(myUid) });
+    }
+};
+
+window.addPlatformComment = async (postId) => {
+    const inp = document.getElementById(`input-comm-${postId}`);
+    if(!inp || !inp.value.trim()) return;
+    const postRef = doc(db, "posts", postId);
+    
+    await updateDoc(postRef, {
+        comments: arrayUnion({
+            authorId: myUid,
+            authorName: currentUserData ? currentUserData.name : "عضو",
+            text: inp.value.trim(),
+            timestamp: Date.now()
+        })
+    });
+    inp.value = "";
+};
