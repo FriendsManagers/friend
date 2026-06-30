@@ -1,0 +1,129 @@
+/* ==========================================================================
+   Friends Platform - Login Screen Layout (2026 Production)
+   ========================================================================== */
+
+body {
+    background-color: var(--bg-main);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    min-height: 100vh;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.login-wrapper {
+    width: 100%;
+    max-width: 960px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    align-items: center;
+}
+
+.login-branding {
+    text-align: right;
+}
+
+.platform-logo {
+    font-size: 56px;
+    font-weight: 900;
+    color: var(--accent-color);
+    margin: 0 0 16px 0;
+    letter-spacing: -1.5px;
+}
+
+.platform-slogan {
+    font-size: 18px;
+    line-height: 1.6;
+    color: var(--text-secondary);
+    margin: 0;
+    font-weight: 500;
+}
+
+.login-card {
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 40px;
+    box-shadow: var(--shadow-sm);
+}
+
+.card-title {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin: 0 0 6px 0;
+}
+
+.card-subtitle {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin: 0 0 28px 0;
+}
+
+.input-wrapper {
+    margin-bottom: 20px;
+    text-align: right;
+}
+
+.field-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+}
+
+.auth-navigation-links {
+    margin-top: 24px;
+    text-align: center;
+    font-size: 13.5px;
+    border-top: 1px solid var(--border-color);
+    padding-top: 20px;
+}
+
+.auth-navigation-links p {
+    margin: 8px 0;
+}
+
+.highlight-link {
+    color: var(--accent-color);
+    text-decoration: none;
+    font-weight: 700;
+}
+.highlight-link:hover {
+    text-decoration: underline;
+}
+
+.muted-link {
+    color: var(--text-muted);
+    text-decoration: none;
+}
+.muted-link:hover {
+    color: var(--text-secondary);
+}
+
+/* التجاوب الذكي مع الشاشات الصغيرة (Responsive) */
+@media (max-width: 768px) {
+    .login-wrapper {
+        grid-template-columns: 1fr;
+        gap: 24px;
+        max-width: 420px;
+    }
+    .login-branding {
+        text-align: center;
+        padding: 0 10px;
+    }
+    .platform-logo {
+        font-size: 42px;
+    }
+    .platform-slogan {
+        font-size: 15px;
+    }
+    .login-card {
+        padding: 30px 20px;
+    }
+}
