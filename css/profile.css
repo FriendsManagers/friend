@@ -1,0 +1,79 @@
+/* ==========================================================================
+   Friends Platform - Profile & Pro Marketplace Core Styles (2026 Layout)
+   ========================================================================== */
+
+body {
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+    padding-top: 60px;
+    margin: 0;
+}
+
+.profile-header-nav {
+    position: fixed; top: 0; left: 0; right: 0; height: 55px;
+    background-color: var(--bg-surface);
+    border-bottom: 1px solid var(--border-color);
+    display: flex; align-items: center; padding: 0 16px; gap: 20px; z-index: 1000;
+}
+
+.back-arrow-btn {
+    background: none; border: none; font-size: 20px; color: var(--accent-color); cursor: pointer;
+}
+
+.header-user-titles h3 { margin: 0; font-size: 16px; font-weight: 800; }
+.header-user-titles span { font-size: 12px; color: var(--text-secondary); }
+
+.profile-container { max-width: 600px; margin: 0 auto; background: var(--bg-surface); min-height: 100vh; border-left: 1px solid var(--border-color); border-right: 1px solid var(--border-color); }
+
+.user-info-card { padding: 24px; border-bottom: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 16px; position: relative; }
+.large-profile-avatar { width: 90px; height: 90px; border-radius: 50%; border: 3px solid var(--bg-surface); box-shadow: var(--shadow-sm); }
+
+.profile-full-name { font-size: 22px; font-weight: 900; margin: 0; display: flex; align-items: center; gap: 8px; }
+.profile-bio-text { font-size: 14.5px; line-height: 1.5; color: var(--text-secondary); margin: 6px 0; }
+.profile-stats { display: flex; gap: 20px; font-size: 14px; color: var(--text-secondary); margin-top: 6px; }
+.profile-stats strong { color: var(--text-primary); }
+
+.profile-action-zone { position: absolute; top: 24px; left: 24px; }
+
+/* أزرار التبويبات الفخمة */
+.profile-tabs-nav { display: flex; border-bottom: 1px solid var(--border-color); background: var(--bg-surface); }
+.tab-link { flex: 1; text-align: center; padding: 16px; border: none; background: none; font-size: 14.5px; font-weight: 700; color: var(--text-secondary); cursor: pointer; border-bottom: 3px solid transparent; transition: var(--transition-fast); }
+.tab-link.active { color: var(--text-primary); border-bottom-color: var(--accent-color); }
+.badge-0-tax { font-size: 10px; background: rgba(255, 45, 85, 0.1); color: var(--marketplace-color); padding: 2px 6px; border-radius: 10px; }
+
+/* لوحات العرض والتحكم بالتبويبات */
+.tab-panel { display: none; padding: 16px; }
+.tab-panel.active { display: block; }
+
+.profile-feed-card { background: var(--bg-main); padding: 16px; border-radius: var(--radius-md); margin-bottom: 12px; font-size: 14.5px; border: 1px solid var(--border-color); }
+
+/* واجهة المتجر المغلق (الحسابات العادية) */
+.locked-market-box { text-align: center; padding: 40px 20px; background: var(--bg-main); border-radius: var(--radius-lg); border: 2px dashed var(--border-color); margin-top: 10px; }
+.lock-icon { font-size: 40px; margin-bottom: 12px; }
+.locked-market-box h3 { margin: 0 0 8px 0; font-size: 17px; }
+.locked-market-box p { font-size: 13.5px; color: var(--text-secondary); line-height: 1.6; margin: 0 0 24px 0; }
+
+/* واجهة المتجر المفتوح (المحترفين) */
+.market-pro-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
+.market-pro-header h4 { margin: 0; font-size: 15px; font-weight: 800; }
+
+.services-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.service-product-card { background: var(--bg-main); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 16px; display: flex; flex-direction: column; justify-content: space-between; }
+.srv-card-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.srv-tag-0 { font-size: 10px; background: rgba(52, 199, 89, 0.1); color: #34c759; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
+.srv-price-tag { font-size: 13px; font-weight: 800; color: var(--marketplace-color); }
+.service-product-card h4 { margin: 0 0 6px 0; font-size: 14.5px; font-weight: 700; color: var(--text-primary); }
+.service-product-card p { margin: 0 0 12px 0; font-size: 12.5px; color: var(--text-secondary); line-height: 1.5; height: 54px; overflow: hidden; }
+
+/* نافذة المودال المنبثقة لإضافة خدمة */
+.modal-backdrop { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: var(--transition-smooth); z-index: 2000; }
+.modal-backdrop.open { opacity: 1; pointer-events: auto; }
+.modal-card { background: var(--bg-surface); padding: 30px; border-radius: var(--radius-lg); width: 100%; max-width: 440px; box-shadow: var(--shadow-md); box-sizing: border-box; }
+.modal-card h3 { margin: 0 0 12px 0; font-size: 18px; text-align: right; }
+.modal-actions-btns { display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid var(--border-color); padding-top: 16px; margin-top: 10px; }
+
+@media (max-width: 500px) {
+    .services-grid { grid-template-columns: 1fr; }
+    .profile-action-zone { position: static; margin-top: 10px; width: 100%; }
+    .profile-action-zone button { width: 100%; }
+}
