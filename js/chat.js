@@ -28,15 +28,27 @@ let activeRoomId = null;
 document.addEventListener("DOMContentLoaded", () => {
     onAuthStateChanged(auth, (user) => {
         if (!user) {
-            window.location.href = "login.html";
+            window.location.href = "index.html";
         } else {
             currentUserId = user.uid;
             loadUsersSidebarList();
             setupSendFormHandler();
             setupSupportButton();
+            checkUrlForTargetUser();
         }
     });
 });
+
+/* ================= ميزة فحص الرابط للتحويل المباشر لشات يوزر محدد ================= */
+function checkUrlForTargetUser() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const targetUid = urlParams.get('target');
+    const targetName = urlParams.get('name');
+    
+    if (targetUid && targetName) {
+        startActiveChatSession(targetUid, targetName, "https://www.gravatar.com/avatar/?d=mp");
+    }
+}
 
 /* ================= جلب المستخدمين المتاحين لبدء شات معهم ================= */
 async function loadUsersSidebarList() {
@@ -47,8 +59,7 @@ async function loadUsersSidebarList() {
 
         usersSnap.forEach((userDoc) => {
             const uData = userDoc.data();
-            // عدم إظهار حسابي الشخصي في قائمة المحادثات الجانبية
-            if (uData.uid !== currentUserId) {
+            if (uData.uid !== currentUserId && uData.uid !== "platform_support_admin") {
                 htmlList += `
                     <div class="sidebar-user-item" data-uid="${uData.uid}" data-name="${uData.name}" data-avatar="${uData.avatar || 'https://www.gravatar.com/avatar/?d=mp'}">
                         <img src="${uData.avatar || 'https://www.gravatar.com/avatar/?d=mp'}" class="sb-avatar">
@@ -63,7 +74,6 @@ async function loadUsersSidebarList() {
 
         container.innerHTML = htmlList || `<p class="chat-loading-text">لا يوجد مستخدمين آخرين حالياً.</p>`;
 
-        // ربط حدث الضغط على أي مستخدم لبدء الشات فوراً
         document.querySelectorAll(".sidebar-user-item").forEach(item => {
             item.onclick = () => {
                 startActiveChatSession(item.getAttribute("data-uid"), item.getAttribute("data-name"), item.getAttribute("data-avatar"));
@@ -80,7 +90,6 @@ function setupSupportButton() {
     const supportAnchor = document.getElementById("trigger-support-chat");
     if(supportAnchor) {
         supportAnchor.onclick = () => {
-            // توجيه المستخدم لغرفة دعم مخصصة بمعرف الإدارة الثابت "platform_support_admin"
             startActiveChatSession("platform_support_admin", "الدعم الفني البشري الرسمي", "https://cdn-icons-png.flaticon.com/512/681/681494.png");
         };
     }
@@ -90,18 +99,14 @@ function setupSupportButton() {
 function startActiveChatSession(targetUid, targetName, targetAvatar) {
     activeTargetUserId = targetUid;
     
-    // إخفاء الحالة الفارغة وإظهار واجهة الشات
     document.getElementById("chat-empty-view").style.display = "none";
     document.getElementById("chat-active-view").style.display = "flex";
 
-    // تحديث الهيدر بالبيانات الحقيقية للمستقبل
     document.getElementById("active-chat-name").innerText = targetName;
     document.getElementById("active-chat-avatar").src = targetAvatar;
 
-    // بناء Room ID ثابت وفريد يجمع الطرفين (ترتيب الحروف أبجدياً لمنع تكرار الغرفة)
     activeRoomId = currentUserId < targetUid ? `${currentUserId}_${targetUid}` : `${targetUid}_${currentUserId}`;
 
-    // بدء الاستماع والتدفق الحي للرسائل بالثانية
     listenToIncomingLiveMessages();
 }
 
@@ -121,7 +126,6 @@ function listenToIncomingLiveMessages() {
         }
 
         streamContainer.innerHTML = messages.map(msg => {
-            // تحديد إذا كانت الرسالة مرسلة مني أو من الطرف الآخر لتحديد الشكل والاتجاه
             const isMe = (msg.senderId === currentUserId);
             const msgClass = isMe ? "msg-bubble outward-me" : "msg-bubble inward-them";
 
@@ -134,24 +138,24 @@ function listenToIncomingLiveMessages() {
             `;
         }).join("");
 
-        // النزول التلقائي لأسفل الشات لرؤية الرسائل الجديدة فوراً
         streamContainer.scrollTop = streamContainer.scrollHeight;
     });
 }
 
-/* ================= معالجة إرسال الرسالة الحية ================= */
+/* ================= معالجة إرسال الرسالة الحية ومنع الريفريش نهائياً ================= */
 function setupSendFormHandler() {
     const form = document.getElementById("chat-send-form");
     const input = document.getElementById("chat-message-input");
-    const btn = document.getElementById("chat-send-btn");
 
-    if (!form || !input || !btn) return;
+    if (!form || !input) return;
 
-    form.onsubmit = async () => {
+    form.onsubmit = async (e) => {
+        e.preventDefault(); // تم التعديل الحين: كبح وإلغاء الريفريش التلقائي للفورم بنجاح 🔒
+        
         const text = input.value.trim();
         if (!text || !activeRoomId) return;
 
-        input.value = ""; // تفريغ حقل الإدخال فوراً لسرعة الأداء (UI Snap)
+        input.value = ""; 
         
         try {
             await addDoc(collection(db, "chats", activeRoomId, "messages"), {
@@ -159,8 +163,8 @@ function setupSendFormHandler() {
                 senderId: currentUserId,
                 createdAt: serverTimestamp()
             });
-        } catch (e) {
-            console.error("فشل إرسال الرسالة:", e);
+        } catch (error) {
+            console.error("فشل إرسال الرسالة لايف:", error);
         }
     };
 }
