@@ -1,0 +1,70 @@
+/* ==========================================================================
+   Friends Platform - High-Performance UI Animations (2026 UI/UX)
+   ========================================================================== */
+
+/* تأثير الظهور المتدرج مع الصعود الطفيف للمنشورات والشاشات */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* تأثير ظهور التنبيهات (Toasts) */
+@keyframes slideInRight {
+    from {
+        transform: translateX(120%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* تأثير نبض خفيف للميزات التفاعلية */
+@keyframes pulseGlow {
+    0% {
+        box-shadow: 0 0 0 0 rgba(0, 118, 255, 0.4);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(0, 118, 255, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(0, 118, 255, 0);
+    }
+}
+
+/* الفئات الجاهزة للتطبيق الفوري */
+.animate-fade-in-up {
+    animation: fadeInUp var(--transition-smooth);
+    animation-fill-mode: both;
+}
+
+.animate-slide-in {
+    animation: slideInRight 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+}
+
+.btn-pulse {
+    animation: pulseGlow 2s infinite;
+}
+
+/* تنعيم الحركات عند التحويم بالماوس */
+.hover-scale {
+    transition: var(--transition-fast);
+}
+.hover-scale:hover {
+    transform: scale(1.02);
+}
+
+.hover-lift {
+    transition: var(--transition-smooth);
+}
+.hover-lift:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+}
