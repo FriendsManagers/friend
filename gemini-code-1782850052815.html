@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>المحادثات المباشرة | Friends لايف</title>
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/animations.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/chat.css">
+</head>
+<body class="animate-fade-in-up">
+
+    <div class="chat-main-layout">
+        <aside class="chat-sidebar">
+            <div class="sidebar-chat-header">
+                <button class="nav-back-home" onclick="window.location.href='home.html'">➔</button>
+                <h3>الرسائل لايف 💬</h3>
+            </div>
+            
+            <div class="human-support-anchor" id="trigger-support-chat">
+                <div class="support-icon-badge">🛡️</div>
+                <div class="support-info-text">
+                    <h4>الدعم الفني البشري (Live)</h4>
+                    <p>مراجعة بشرية 100% بدون روبوتات جافة</p>
+                </div>
+            </div>
+
+            <div class="active-chats-list" id="rooms-list-container">
+                <p class="chat-loading-text">جاري تحميل الأصدقاء...</p>
+            </div>
+        </aside>
+
+        <main class="chat-window-viewport">
+            <div class="chat-blank-state" id="chat-empty-view">
+                <div class="blank-icon">✉️</div>
+                <h3>صندوق الرسائل الآمنة</h3>
+                <p>اختر صديقاً أو تواصل مع الدعم البشري الفوري لبدء محادثة مشفرة ولايف.</p>
+            </div>
+
+            <div class="chat-active-interface" id="chat-active-view" style="display: none;">
+                <header class="active-chat-header">
+                    <img src="https://www.gravatar.com/avatar/?d=mp" id="active-chat-avatar" class="chat-user-img">
+                    <div class="active-user-meta">
+                        <h4 id="active-chat-name">اسم المستخدم</h4>
+                        <span id="active-chat-status">متصل لايف 🟢</span>
+                    </div>
+                </header>
+
+                <div class="messages-stream-body" id="messages-stream-container">
+                    </div>
+
+                <footer class="chat-input-footer">
+                    <form id="chat-send-form" onsubmit="return false;" style="display: flex; width: 100%; gap: 10px;">
+                        <input type="text" id="chat-message-input" class="base-input" placeholder="اكتب رسالتك الحقيقية هنا لايف..." autocomplete="off">
+                        <button type="submit" id="chat-send-btn" class="base-btn btn-accent" style="border-radius: var(--radius-md); padding: 0 24px;">إرسال 🚀</button>
+                    </form>
+                </footer>
+            </div>
+        </main>
+    </div>
+
+    <script type="module" src="js/chat.js"></script>
+</body>
+</html>
