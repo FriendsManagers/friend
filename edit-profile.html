@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تعديل الحساب | Friends</title>
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/profile.css">
+</head>
+<body style="padding:20px; background:var(--bg-main); color:var(--text-primary);">
+
+    <div style="max-width:500px; margin:0 auto; background:var(--bg-surface); padding:30px; border-radius:var(--radius-lg); border:1px solid var(--border-color);">
+        <h3 style="margin-top:0;">🔧 تعديل ملفك الشخصي</h3>
+        <form id="edit-profile-core-form" onsubmit="return false;">
+            <div style="margin-bottom:15px;">
+                <label style="display:block; font-size:13px; font-weight:bold; margin-bottom:6px;">الاسم الجديد</label>
+                <input type="text" id="edit-name" class="base-input" required>
+            </div>
+            <div style="margin-bottom:15px;">
+                <label style="display:block; font-size:13px; font-weight:bold; margin-bottom:6px;">رابط صورة البروفايل (Avatar URL)</label>
+                <input type="text" id="edit-avatar" class="base-input" placeholder="https://example.com/image.png">
+            </div>
+            <button type="submit" id="btn-save-profile" class="base-btn btn-accent" style="width:100%; height:44px;">حفظ التعديلات الحين 💾</button>
+        </form>
+        <button class="base-btn" onclick="window.location.href='profile.html'" style="width:100%; margin-top:10px; background:none; border:1px solid var(--border-color); color:var(--text-primary);">إلغاء والعودة للبروفايل</button>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+          apiKey: "AIzaSyA5SS93zdj5N8oBMmjPgWvfSohdSBIRQ8c",
+          authDomain: "friends7777.firebaseapp.com",
+          projectId: "friends7777"
+        };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        let uid = null;
+
+        onAuthStateChanged(auth, async (user) => {
+            if(!user) window.location.href = "index.html";
+            else {
+                uid = user.uid;
+                const snap = await getDoc(doc(db, "users", uid));
+                if(snap.exists()) {
+                    document.getElementById("edit-name").value = snap.data().name || "";
+                    document.getElementById("edit-avatar").value = snap.data().avatar || "";
+                }
+            }
+        });
+
+        document.getElementById("edit-profile-core-form").onsubmit = async () => {
+            const name = document.getElementById("edit-name").value.trim();
+            const avatar = document.getElementById("edit-avatar").value.trim();
+            
+            await updateDoc(doc(db, "users", uid), { name, avatar });
+            alert("تم تحديث بياناتك بنجاح! 🎉");
+            window.location.href = "profile.html";
+        };
+    </script>
+</body>
+</html>
