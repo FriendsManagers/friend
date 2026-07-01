@@ -1,138 +1,100 @@
-<!-- profile.html -->
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>الملف الشخصي | Friends لايف</title>
+    <title>الملف الشخصي والمتجر | Friends</title>
     <link rel="stylesheet" href="css/variables.css">
-    <link rel="stylesheet" href="css/animations.css">
+    <link rel="stylesheet" href="css/animations.css text">
     <link rel="stylesheet" href="css/components.css">
     <link rel="stylesheet" href="css/profile.css">
+    <style>
+        /* ستايل سريع ومطور للنافذة المنبثقة لتكبير وتعديل الصورة */
+        .profile-avatar-modal {
+            display: none; position: fixed; top:0; left:0; width:100%; height:100%; 
+            background: rgba(0,0,0,0.85); z-index: 2000; justify-content: center; align-items: center;
+        }
+        .modal-content-box {
+            background: var(--bg-surface); padding: 24px; border-radius: var(--radius-lg);
+            max-width: 400px; width: 90%; text-align: center; border: 1px solid var(--border-color);
+        }
+        .modal-preview-img { width: 150px; height: 150px; border-radius: 50%; object-fit: cover; margin-bottom: 16px; border: 3px solid var(--accent-color); }
+    </style>
 </head>
 <body class="animate-fade-in-up">
 
-    <!-- شريط التنبيهات الذكي (Toast) -->
-    <div id="app-toast" class="custom-toast">
-        <div class="toast-icon-wrapper" style="background: var(--marketplace-light);">
-            <span class="toast-icon">✨</span>
+    <div id="avatar-actions-modal" class="profile-avatar-modal">
+        <div class="modal-content-box animate-fade-in-up">
+            <img src="" id="modal-image-preview" class="modal-preview-img">
+            <h4 style="margin:0 0 10px 0;">إدارة صورة الملف الشخصي</h4>
+            <input type="text" id="modal-avatar-url-input" class="base-input" placeholder="ضع رابط الصورة الجديد هنا..." style="margin-bottom:12px;">
+            <div style="display:flex; gap:10px;">
+                <button id="btn-save-modal-avatar" class="base-btn btn-accent" style="flex:1;">حفظ الرابط 💾</button>
+                <button id="btn-delete-modal-avatar" class="base-btn" style="flex:1; background: #ff4d4d; color:#fff; border:none;">حذف الصورة 🗑️</button>
+            </div>
+            <button onclick="document.getElementById('avatar-actions-modal').style.display='none'" class="base-btn" style="width:100%; margin-top:10px; background:none; border:1px solid var(--border-color); color:var(--text-primary);">إغلاق</button>
         </div>
-        <div class="toast-message-text">جاري تحديث البيانات...</div>
     </div>
 
-    <!-- الهيدر العلوي للملف الشخصي -->
-    <header class="profile-header-nav">
-        <button class="back-arrow-btn" onclick="window.location.href='home.html'">➔</button>
-        <div class="header-user-titles">
-            <h3 id="top-nav-name">جاري التحميل...</h3>
-            <span id="top-nav-posts-count">0 منشور</span>
+    <header class="profile-nav-header">
+        <button class="back-timeline-btn" onclick="window.location.href='home.html'">➔ العودة للتايملاين</button>
+        <div class="header-action-links">
+            <button class="base-btn" id="btn-logout-action" style="background:none; border:1px solid var(--border-color); color:var(--text-primary); padding:4px 12px; font-size:12px;">تسجيل الخروج</button>
         </div>
     </header>
 
-    <main class="profile-container">
-        <!-- كارت معلومات المستخدم (Hero Section) -->
-        <section class="user-info-card">
-            <div class="avatar-wrapper">
-                <img src="https://www.gravatar.com/avatar/?d=mp" id="user-profile-avatar" class="large-profile-avatar">
+    <main class="profile-layout-container">
+        <section class="identity-profile-card">
+            <div class="user-avatar-wrapper">
+                <img src="https://www.gravatar.com/avatar/?d=mp" id="user-profile-avatar-img" class="editable-main-avatar" title="اضغط لتكبير وتعديل الصورة" style="cursor:pointer;">
+                <div class="avatar-hover-hint">اضغط للتعديل ⚙️</div>
             </div>
             
-            <div class="user-details-block">
-                <h2 class="profile-full-name">
-                    <span id="profile-name">جاري التحميل...</span>
-                    <!-- شارة التوثيق المجانية المبنية على الجدارة -->
-                    <span id="merit-badge" class="verified-badge" style="display: none;">✓ موثق بجدارة</span>
-                </h2>
-                <p id="profile-bio" class="profile-bio-text">جاري تحميل النبذة الشخصية...</p>
-                
-                <div class="profile-stats">
-                    <span><strong id="followers-count">0</strong> متابع</span>
-                    <span><strong id="following-count">0</strong> يتابع</span>
-                </div>
+            <div class="identity-meta-info">
+                <h2 id="profile-display-name">جاري التحميل...</h2>
+                <p id="profile-display-bio" class="user-bio-text">لم يتم تعيين بايو أو وصف شخصي حتى الآن.</p>
+                <div class="profile-badges-row" id="profile-badges-container"></div>
             </div>
 
-            <!-- زر الترقية للحساب الاحترافي أو تعديل البيانات -->
-            <div id="profile-action-area" class="profile-action-zone">
-                <!-- سيتم حقن الأزرار ذكياً عبر الجافا سكريبت هنا -->
+            <div class="profile-action-triggers-row" id="profile-actions-wrapper">
+                </div>
+        </section>
+
+        <section class="identity-profile-card" id="settings-section-card" style="margin-top:16px;">
+            <h3 style="margin-top:0;">⚙️ تعديل بيانات الحساب الأساسية</h3>
+            <div style="display:flex; flex-direction:column; gap:12px;">
+                <div>
+                    <label style="display:block; font-size:12px; font-weight:bold; margin-bottom:4px;">الاسم الكامل</label>
+                    <input type="text" id="setting-input-name" class="base-input" placeholder="اكتب اسمك الحقيقي">
+                </div>
+                <div>
+                    <label style="display:block; font-size:12px; font-weight:bold; margin-bottom:4px;">البايو / الوصف الشخصي</label>
+                    <textarea id="setting-input-bio" class="base-input" placeholder="اكتب نبذة عنك أو عن خدماتك..." style="min-height:60px; resize:none; font-family:inherit;"></textarea>
+                </div>
+                <button id="btn-save-basic-settings" class="base-btn btn-accent" style="height:40px;">حفظ الاسم والبايو الحين 💾</button>
             </div>
         </section>
 
-        <!-- التبويبات الفخمة للفصل بين المنشورات والمتجر الاحترافي -->
-        <nav class="profile-tabs-nav">
-            <button id="tab-posts-btn" class="tab-link active">📝 المنشورات</button>
-            <button id="tab-market-btn" class="tab-link">💼 متجر الخدمات <span class="badge-0-tax">0% عمولة</span></button>
-        </nav>
+        <section class="marketplace-pro-section" id="marketplace-display-area">
+            <header class="marketplace-section-header">
+                <h3>💼 متجر الخدمات الرقمية والحرة <span class="zero-fee-pill">عمولة 0%</span></h3>
+                <p class="section-desc-p">هذا المتجر معزول تماماً عن التفاعلات الاجتماعية لضمان بيئة بيع وشراء جادة ومحترفة.</p>
+            </header>
 
-        <!-- محتوى التبويبات -->
-        <section class="tabs-content-viewport">
-            
-            <!-- [أوّلاً] تايملاين منشورات هذا المستخدم فقط -->
-            <div id="profile-posts-view" class="tab-panel active">
-                <div id="user-posts-container" class="posts-list-wrapper">
-                    <!-- يحقن هنا منشورات اليوزر لايف -->
+            <div id="pro-merchant-control-panel" class="merchant-dashboard-box" style="display: none; margin-bottom:20px;">
+                <h4>📥 إضافة وتحديث خدماتك في المتجر</h4>
+                <div class="merchant-inputs-grid" style="display:flex; flex-direction:column; gap:10px;">
+                    <input type="text" id="market-service-title" class="base-input" placeholder="اسم الخدمة (مثال: عزل مائي وحراري للأسطح)">
+                    <input type="number" id="market-service-price" class="base-input" placeholder="السعر المقترح (SAR)">
+                    <button id="submit-new-service-btn" class="base-btn btn-accent" style="height:40px;">نشر وتحديث الخدمة بالمتجر 🚀</button>
                 </div>
             </div>
 
-            <!-- [ثانياً] متجر الخدمات الذكي (يفتح فقط للمحترفين) -->
-            <div id="profile-market-view" class="tab-panel">
-                
-                <!-- حالة 1: الحساب ما زال عادياً ولم يترقى -->
-                <div id="market-locked-state" class="locked-market-box" style="display: none;">
-                    <div class="lock-icon">🔒</div>
-                    <h3>متجر الخدمات مخصص للحسابات الاحترافية</h3>
-                    <p>أنت حالياً على الحساب العادي. قم بترقية حسابك إلى "حساب احترافي" مجاناً لتتمكن من إدراج كورساتك، خدماتك، أو منتجاتك واستلام أرباحك بعمولة 0% بالكامل!</p>
-                    <button id="upgrade-to-pro-btn" class="base-btn btn-accent btn-pulse" style="background-color: var(--marketplace-color);">
-                        ⚙️ ترقية حسابي إلى احترافي مجاناً
-                    </button>
-                </div>
-
-                <!-- حالة 2: الحساب احترافي والمتجر مفتوح -->
-                <div id="market-active-state" class="active-market-wrapper" style="display: none;">
-                    <div class="market-pro-header">
-                        <h4>صندوق خدماتك الاحترافية لايف 🚀</h4>
-                        <button id="open-add-service-modal" class="base-btn btn-accent" style="background-color: var(--marketplace-color); padding: 6px 16px; font-size: 12.5px;">
-                            ＋ إضافة خدمة للمتجر
-                        </button>
-                    </div>
-
-                    <!-- شبكة عرض الخدمات (Services Grid) -->
-                    <div id="services-grid-container" class="services-grid">
-                        <!-- الخدمات المستضافة لايف بتظهر هنا -->
-                    </div>
-                </div>
-
+            <div class="rendered-services-list-grid" id="profile-services-grid-container">
+                <p class="empty-market-text">لا توجد خدمات معروضة في المتجر حالياً.</p>
             </div>
         </section>
     </main>
-
-    <!-- نافذة منبثقة (Modal) لإضافة خدمة جديدة للمتجر الاحترافي -->
-    <div id="add-service-modal" class="modal-backdrop">
-        <div class="modal-card animate-fade-in-up">
-            <h3>إدراج خدمة جديدة في متجرك</h3>
-            <p style="font-size: 12px; color: var(--text-secondary); margin-top: -8px; margin-bottom: 20px;">المنصة لن تستقطع أي عمولة من مبيعاتك نهائياً 💸</p>
-            
-            <form id="add-service-form" onsubmit="return false;">
-                <div class="input-wrapper" style="text-align: right; margin-bottom: 16px;">
-                    <label class="field-label">عنوان الخدمة أو المنتج الرقمي</label>
-                    <input type="text" id="srv-title" class="base-input" placeholder="مثال: كورس أساسيات العزل الحراري المطور" required>
-                </div>
-                
-                <div class="input-wrapper" style="text-align: right; margin-bottom: 16px;">
-                    <label class="field-label">سعر الخدمة (بالريال السعودي - SAR)</label>
-                    <input type="number" id="srv-price" class="base-input" placeholder="مثال: 150" required>
-                </div>
-
-                <div class="input-wrapper" style="text-align: right; margin-bottom: 20px;">
-                    <label class="field-label">وصف تفصيلي للخدمة ورابط الشراء/التواصل</label>
-                    <textarea id="srv-desc" class="base-input" style="min-height: 80px; resize: none;" placeholder="اكتب تفاصيل الخدمة وطريقة استلام العميل لها بعد الدفع..." required></textarea>
-                </div>
-
-                <div class="modal-actions-btns">
-                    <button type="button" id="close-service-modal" class="base-btn btn-secondary">إلغاء</button>
-                    <button type="submit" id="submit-new-service-btn" class="base-btn btn-accent" style="background-color: var(--marketplace-color);">نشر الخدمة فوراً</button>
-                </div>
-            </form>
-        </div>
-    </div>
 
     <script type="module" src="js/profile.js"></script>
 </body>
