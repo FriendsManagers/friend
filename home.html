@@ -1,3 +1,4 @@
+<!-- home.html - النسخة الكاملة الاحترافية بدعم الموبايل والكمبيوتر (2026) -->
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -11,15 +12,34 @@
 </head>
 <body class="animate-fade-in-up">
 
+    <!-- شريط التنبيهات الذكي -->
     <div id="app-toast" class="custom-toast">
-        <div class="toast-icon-wrapper" style="background: var(--accent-light);">
-            <span class="toast-icon">✨</span>
-        </div>
-        <div class="toast-message-text">جاري معالجة المنشور...</div>
+        <div class="toast-icon-wrapper" style="background: var(--accent-light);"><span class="toast-icon">✨</span></div>
+        <div class="toast-message-text">جاري معالجة البيانات...</div>
     </div>
 
+    <!-- 📱 نافذة القائمة الجانبية المنزلقة للموبايل (Drawer) -->
+    <div id="mobile-overlay" class="mobile-drawer-overlay"></div>
+    <div id="mobile-drawer" class="mobile-drawer-content">
+        <div class="drawer-header">
+            <h3 style="margin:0; font-size:18px; color:var(--accent-color);">🧭 تصفح الأقسام</h3>
+            <button id="close-menu-trigger" class="close-drawer-btn">✕</button>
+        </div>
+        <ul class="sidebar-menu-list">
+            <li class="sidebar-menu-item"><a href="home.html">🏠 الرئيسية</a></li>
+            <li class="sidebar-menu-item"><a href="friends.html">🤝 الأصدقاء والمتابعين</a></li>
+            <li class="sidebar-menu-item"><a href="groups.html">👥 المجموعات المشتركة</a></li>
+            <li class="sidebar-menu-item"><a href="videos.html">📺 منصة الفيديوهات</a></li>
+            <li class="sidebar-menu-item"><a href="saved.html">🔖 العناصر المحفوظة</a></li>
+            <li class="sidebar-menu-item"><a href="profile.html">💼 متجري الرقمي</a></li>
+        </ul>
+    </div>
+
+    <!-- الهيدر العلوي المطور -->
     <header class="main-platform-header">
         <div class="header-right-side">
+            <!-- زر الثلاث شرط للموبايل -->
+            <button id="open-menu-trigger" class="header-menu-toggle" title="القائمة">☰</button>
             <span class="platform-brand-logo">Friends</span>
             <div class="algorithm-badge">⏱️ زمني 100%</div>
         </div>
@@ -30,44 +50,76 @@
         </div>
     </header>
 
-    <main class="timeline-main-container">
-        <section class="publish-content-card">
-            <div class="publish-upper-row">
-                <img src="https://www.gravatar.com/avatar/?d=mp" id="publish-box-avatar" class="box-user-avatar">
-                <textarea id="timeline-post-textarea" placeholder="شارك أفكارك الحين.. محتواك سيصل لـ 100% بدون حجب! 🚀"></textarea>
-            </div>
-            <div class="publish-lower-actions">
-                <div class="privacy-notice-tag">🔒 بيئة تصفح نظيفة ومحمية</div>
-                <button id="timeline-publish-submit-btn" class="base-btn btn-accent btn-pulse" style="padding: 6px 20px; font-size: 13px;">
-                    نشر المنشور فوراً
-                </button>
-            </div>
-        </section>
+    <!-- شبكة التوزيع الجدارية (السايدبار + التايملاين) -->
+    <div class="timeline-layout-grid">
+        
+        <!-- 🧭 القائمة الجانبية الثابتة للكمبيوتر -->
+        <aside class="desktop-sidebar">
+            <ul class="sidebar-menu-list">
+                <li class="sidebar-menu-item"><a href="home.html">🏠 الرئيسية</a></li>
+                <li class="sidebar-menu-item"><a href="friends.html">🤝 الأصدقاء والمتابعين</a></li>
+                <li class="sidebar-menu-item"><a href="groups.html">👥 المجموعات المشتركة</a></li>
+                <li class="sidebar-menu-item"><a href="videos.html">📺 منصة الفيديوهات</a></li>
+                <li class="sidebar-menu-item"><a href="saved.html">🔖 العناصر المحفوظة</a></li>
+                <li class="sidebar-menu-item"><a href="profile.html">💼 متجري الرقمي</a></li>
+            </ul>
+        </aside>
 
-        <section id="timeline-live-feed-wrapper" class="feed-stream-layout">
-            <div style="text-align: center; padding: 40px; color: var(--text-secondary);">جاري فتح اتصال زمني آمن...</div>
-        </section>
-    </main>
+        <!-- حاوية التايملاين والمحتوى الرئيسية -->
+        <main class="timeline-content-feed">
+            <!-- صندوق نشر المحتوى -->
+            <section class="publish-content-card">
+                <div class="publish-upper-row">
+                    <img src="https://www.gravatar.com/avatar/?d=mp" id="publish-box-avatar" class="box-user-avatar">
+                    <textarea id="timeline-post-textarea" placeholder="شارك أفكارك الحين.. محتواك سيصل لـ 100% بدون حجب! 🚀"></textarea>
+                </div>
+                <div class="publish-lower-actions">
+                    <div class="privacy-notice-tag">🔒 بيئة تصفح نظيفة ومحمية</div>
+                    <button id="timeline-publish-submit-btn" class="base-btn btn-accent btn-pulse" style="padding: 6px 20px; font-size: 13px;">
+                        نشر المنشور فوراً
+                    </button>
+                </div>
+            </section>
 
+            <!-- تايملاين تدفق المنشورات والإعلانات لايف -->
+            <section id="timeline-live-feed-wrapper" class="feed-stream-layout">
+                <div style="text-align: center; padding: 40px; color: var(--text-secondary);">جاري فتح اتصال زمني آمن...</div>
+            </section>
+        </main>
+    </div>
+
+    <!-- شريط التنقل السفلي المطور للموبايل -->
     <nav class="mobile-fixed-bottom-nav">
-        <a href="home.html" class="bottom-nav-link active">
-            <span class="nav-icon-span">🏠</span>
-            <span class="nav-text-span">الرئيسية</span>
-        </a>
-        <a href="reels.html" class="bottom-nav-link">
-            <span class="nav-icon-span">🎬</span>
-            <span class="nav-text-span">الريلز</span>
-        </a>
-        <a href="chat.html" class="bottom-nav-link">
-            <span class="nav-icon-span">💬</span>
-            <span class="nav-text-span">الرسائل</span>
-        </a>
-        <a href="profile.html" class="bottom-nav-link">
-            <span class="nav-icon-span">💼</span>
-            <span class="nav-text-span">متجري</span>
-        </a>
+        <a href="home.html" class="bottom-nav-link active"><span class="nav-icon-span">🏠</span><span class="nav-text-span">الرئيسية</span></a>
+        <a href="reels.html" class="bottom-nav-link"><span class="nav-icon-span">🎬</span><span class="nav-text-span">الريلز</span></a>
+        <a href="chat.html" class="bottom-nav-link"><span class="nav-icon-span">💬</span><span class="nav-text-span">الرسائل</span></a>
+        <a href="profile.html" class="bottom-nav-link"><span class="nav-icon-span">💼</span><span class="nav-text-span">متجري</span></a>
     </nav>
 
     <script type="module" src="js/posts.js"></script>
+    
+    <!-- محرك تشغيل فتح وإغلاق القائمة المنزلقة للموبايل -->
+    <script>
+        const openBtn = document.getElementById('open-menu-trigger');
+        const closeBtn = document.getElementById('close-menu-trigger');
+        const overlay = document.getElementById('mobile-overlay');
+        const drawer = document.getElementById('mobile-drawer');
+
+        function toggleMenu(open) {
+            if(open) {
+                overlay.classList.add('active');
+                drawer.classList.add('active');
+            } else {
+                overlay.classList.remove('active');
+                drawer.classList.remove('active');
+            }
+        }
+
+        if(openBtn && closeBtn && overlay && drawer) {
+            openBtn.onclick = () => toggleMenu(true);
+            closeBtn.onclick = () => toggleMenu(false);
+            overlay.onclick = () => toggleMenu(false);
+        }
+    </script>
 </body>
 </html>
