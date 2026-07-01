@@ -1,229 +1,243 @@
 /* ==========================================================================
-   Friends Platform - Profile & Enterprise Pro Marketplace Engine (2026)
+   Friends Platform - Advanced Profile, Marketplace & Follow Engine
    ========================================================================== */
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { 
-  getFirestore, doc, getDoc, updateDoc, arrayUnion, collection, query, where, orderBy, onSnapshot 
+  getFirestore, doc, getDoc, updateDoc, arrayUnion, arrayRemove, setDoc
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyA5SS93zdj5N8oBMmjPgWvfSohdSBIRQ8c",
   authDomain: "friends7777.firebaseapp.com",
-  projectId: "friends7777",
-  storageBucket: "friends7777.firebasestorage.app",
-  messagingSenderId: "276910802465",
-  appId: "1:276910802465:web:f4c3c2df36295a71960560"
+  projectId: "friends7777"
 };
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-let profileUserUid = null;
-let isOwnProfile = false;
+let myUid = null;
+let targetProfileUid = null;
+let targetUserData = null;
 
 document.addEventListener("DOMContentLoaded", () => {
-    onAuthStateChanged(auth, (user) => {
+    onAuthStateChanged(auth, async (user) => {
         if (!user) {
-            window.location.href = "login.html";
-        } else {
-            // نأخذ الـ UID من الرابط لو كنا نتصفح حساب شخص آخر، أو نأخذ UID المستخدم الحالي
-            const urlParams = new URLSearchParams(window.location.search);
-            profileUserUid = urlParams.get("id") || user.uid;
-            isOwnProfile = (profileUserUid === user.uid);
-            
-            loadProfileSystemData();
-            listenToUserPosts();
-            setupTabsBehavior();
-            setupMarketplaceModal();
+            window.location.href = "index.html";
+            return;
         }
+        myUid = user.uid;
+
+        // تحديد إذا كنا نتصفح بروفايل شخص آخر أو بروفايلي الشخصي عبر الرابط
+        const urlParams = new URLSearchParams(window.location.search);
+        targetProfileUid = urlParams.get('id') || myUid;
+
+        await renderProfileData();
+        setupLogout();
+        setupBasicSettingsHandler();
+        setupMarketplaceHandler();
+        setupAvatarModalHandlers();
     });
 });
 
-/* ================= جلب بيانات الحساب وفحص نوعه (عادي أم احترافي) ================= */
-async function loadProfileSystemData() {
-    try {
-        const userDocRef = doc(db, "users", profileUserUid);
-        const snap = await getDoc(userDocRef);
-        
-        if(!snap.exists()) return;
-        const data = snap.data();
-
-        // 1. تعبئة البيانات الأساسية الشاملة للواجهة
-        document.getElementById("profile-name").innerText = data.name || "صانع محتوى";
-        document.getElementById("top-nav-name").innerText = data.name || "صانع محتوى";
-        document.getElementById("profile-bio").innerText = data.bio || "لا توجد نبذة شخصية بعد.";
-        document.getElementById("user-profile-avatar").src = data.avatar || "https://www.gravatar.com/avatar/?d=mp";
-        document.getElementById("followers-count").innerText = (data.followers || []).length;
-        document.getElementById("following-count").innerText = (data.following || []).length;
-
-        // 2. ميزة التوثيق المجاني المبني على الجدارة والحقيقة
-        if (data.isVerified) {
-            document.getElementById("merit-badge").style.display = "inline-block";
-        }
-
-        // 3. إدارة منطقة الأزرار (أزرار التحكم)
-        const actionArea = document.getElementById("profile-action-area");
-        if (isOwnProfile) {
-            actionArea.innerHTML = `<button class="base-btn btn-secondary" onclick="window.location.href='edit-profile.html'">⚙️ تعديل الملف</button>`;
-        } else {
-            actionArea.innerHTML = `<button id="follow-btn" class="base-btn btn-accent">تابع الحساب</button>`;
-        }
-
-        /* 4. التحقق الحاسم من ميزة المتجر للأحسابات الاحترافية فقط */
-        handleMarketplaceAccess(data.isProAccount || data.hasMarketplace, data.marketplaceServices || []);
-
-    } catch (err) {
-        console.error("خطأ في جلب بيانات الملف الشخصي:", err);
-    }
-}
-
-/* ================= التحكم بظهور المتجر حسب نوع الحساب ================= */
-function handleMarketplaceAccess(isPro, servicesList) {
-    const lockedState = document.getElementById("market-locked-state");
-    const activeState = document.getElementById("market-active-state");
-    const gridContainer = document.getElementById("services-grid-container");
-
-    if (!isPro) {
-        // إذا كان الحساب عادي: نقفل المتجر ونعرض كارت الترقية (فقط إذا كان هذا ملفك الشخصي)
-        activeState.style.display = "none";
-        lockedState.style.display = "block";
-        
-        const upgradeBtn = document.getElementById("upgrade-to-pro-btn");
-        if (upgradeBtn) {
-            if (!isOwnProfile) {
-                // لو زائر بيتصفح حساب عادي، ملوش ميزة متجر، نخفي التبويب بالكامل أو نكتب رسالة
-                lockedState.innerHTML = `<h3>هذا المستخدم لديه حساب عادي ولا يمتلك متجراً حالياً.</h3>`;
-            } else {
-                upgradeBtn.onclick = async () => {
-                    upgradeBtn.disabled = true;
-                    // كود الترقية المجانية الفورية للحساب الاحترافي لايف
-                    await updateDoc(doc(db, "users", auth.currentUser.uid), {
-                        isProAccount: true,
-                        hasMarketplace: true
-                    });
-                    showToastNotification("مبروك! تم ترقية حسابك إلى احترافي وتفعيل المتجر 🚀", "✅");
-                    loadProfileSystemData(); // إعادة تحميل الواجهة
-                };
-            }
-        }
-    } else {
-        // إذا كان الحساب احترافي: نفتح المتجر فوراً ويعرض المنتجات والخدمات الرقمية
-        lockedState.style.display = "none";
-        activeState.style.display = "block";
-
-        // إذا كان الزائر يتصفح حساب محترف آخر، نخفي عنه زرار "إضافة خدمة جديدة" الخاص بالمالك
-        if(!isOwnProfile) {
-            document.getElementById("open-add-service-modal").style.display = "none";
-        }
-
-        // عرض شبكة الخدمات المدرجة
-        if (servicesList.length === 0) {
-            gridContainer.innerHTML = `<p style="grid-column: 1/-1; text-align:center; color:var(--text-secondary); padding:30px;">المتجر فارغ حالياً، لم يتم إدراج أي خدمات بعد.</p>`;
-        } else {
-            gridContainer.innerHTML = servicesList.map(srv => `
-                <div class="service-product-card animate-fade-in-up">
-                    <div class="srv-card-meta">
-                        <span class="srv-tag-0">عمولة 0%</span>
-                        <span class="srv-price-tag">${srv.price} SAR</span>
-                    </div>
-                    <h4>${srv.title}</h4>
-                    <p>${srv.desc}</p>
-                    <button class="base-btn btn-accent" style="width:100%; font-size:12px; margin-top:10px;" onclick="alert('سيتم توجيهك لرابط الشراء أو محادثة البائع مباشرة الحين!')">طلب الخدمة الآن 🛒</button>
-                </div>
-            `).join("");
-        }
-    }
-}
-
-/* ================= التعامل مع النوافذ المنبثقة للمتجر الاحترافي ================= */
-function setupMarketplaceModal() {
-    const modal = document.getElementById("add-service-modal");
-    const openBtn = document.getElementById("open-add-service-modal");
-    const closeBtn = document.getElementById("close-comments-btn") || document.getElementById("close-service-modal");
-    const form = document.getElementById("add-service-form");
-
-    if(openBtn) openBtn.onclick = () => modal.classList.add("open");
-    if(closeBtn) closeBtn.onclick = () => modal.classList.remove("open");
-
-    if (form) {
-        form.onsubmit = async () => {
-            const title = document.getElementById("srv-title").value.trim();
-            const price = document.getElementById("srv-price").value.trim();
-            const desc = document.getElementById("srv-desc").value.trim();
-
-            if(!title || !price || !desc) return;
-
-            const submitBtn = document.getElementById("submit-new-service-btn");
-            submitBtn.disabled = true;
-
-            try {
-                const newService = { title, price, desc, createdAt: new Date().toISOString() };
-                
-                // إضافة الخدمة للمصفوفة الاحترافية داخل الفايربيز للـ User
-                await updateDoc(doc(db, "users", auth.currentUser.uid), {
-                    marketplaceServices: arrayUnion(newService)
-                });
-
-                modal.classList.remove("open");
-                form.reset();
-                showToastNotification("تم نشر خدمتك الاحترافية في متجرك بنجاح لايف! 🎯", "✅");
-                loadProfileSystemData(); // إنعاش الداتا
-            } catch (e) {
-                alert("فشلت عملية النشر في المتجر");
-            }
-            submitBtn.disabled = false;
-        };
-    }
-}
-
-/* ================= استماع وجلب منشورات صاحب الحساب فقط ================= */
-function listenToUserPosts() {
-    const q = query(collection(db, "posts"), where("authorId", "==", profileUserUid), orderBy("createdAt", "desc"));
+/* ================= جلب وعرض بيانات البروفايل لايف ================= */
+async function renderProfileData() {
+    const docSnap = await getDoc(doc(db, "users", targetProfileUid));
+    if (!docSnap.exists()) return;
     
-    onSnapshot(q, (snapshot) => {
-        const posts = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
-        document.getElementById("top-nav-posts-count").innerText = `${posts.length} منشور`;
-        
-        const container = document.getElementById("user-posts-container");
-        if (posts.length === 0) {
-            container.innerHTML = `<p style="text-align:center; padding:40px; color:var(--text-secondary);">لا توجد أي منشورات من هذا المستخدم بعد.</p>`;
-            return;
-        }
+    targetUserData = docSnap.data();
+    const isOwner = (myUid === targetProfileUid);
 
-        container.innerHTML = posts.map(p => `
-            <div class="profile-feed-card animate-fade-in-up">
-                <div class="pf-body">${p.text}</div>
-            </div>
-        `).join("");
-    });
+    // سحب الداتا الأساسية
+    const avatarUrl = targetUserData.avatar || "https://www.gravatar.com/avatar/?d=mp";
+    document.getElementById("user-profile-avatar-img").src = avatarUrl;
+    document.getElementById("modal-image-preview").src = avatarUrl;
+    document.getElementById("profile-display-name").innerText = targetUserData.name || "عضو مجتمعي";
+    document.getElementById("profile-display-bio").innerText = targetUserData.bio || "لم يتم تعيين بايو أو وصف شخصي حتى الآن.";
+
+    // تعبئة حقول تعديل الإعدادات بقيمها الحالية لو أنا المالك
+    if (isOwner) {
+        document.getElementById("setting-input-name").value = targetUserData.name || "";
+        document.getElementById("setting-input-bio").value = targetUserData.bio || "";
+        document.getElementById("pro-merchant-control-panel").style.display = "block";
+        document.getElementById("settings-section-card").style.display = "block";
+    } else {
+        document.getElementById("pro-merchant-control-panel").style.display = "none";
+        document.getElementById("settings-section-card").style.display = "none";
+    }
+
+    // رص شارات التوثيق والمحترفين الجدارية
+    let badgesHTML = targetUserData.isVerified ? `<span class="merit-badge-item text-verified">✓ موثق بجدارة</span>` : "";
+    if (targetUserData.hasMarketplace || targetUserData.isProAccount) {
+        badgesHTML += ` <span class="merit-badge-item text-pro">💼 حساب محترف</span>`;
+    }
+    document.getElementById("profile-badges-container").innerHTML = badgesHTML;
+
+    // رص أزرار التحكم (تعديل الحساب أو زر المتابعة والمراسلة المباشرة)
+    renderActionButtons(isOwner);
+    
+    // رص خدمات المتجر الحالية
+    renderMarketServices();
 }
 
-/* ================= التنقل السلس بين التبويبات ================= */
-function setupTabsBehavior() {
-    const postsBtn = document.getElementById("tab-posts-btn");
-    const marketBtn = document.getElementById("tab-market-btn");
-    const postsView = document.getElementById("profile-posts-view");
-    const marketView = document.getElementById("profile-market-view");
-
-    if(postsBtn && marketBtn) {
-        postsBtn.onclick = () => {
-            postsBtn.classList.add("active"); marketBtn.classList.remove("active");
-            postsView.classList.add("active"); marketView.classList.remove("active");
+/* ================= أزرار التحكم الديناميكية: متابعة / إلغاء متابعة / مراسلة ================= */
+function renderActionButtons(isOwner) {
+    const container = document.getElementById("profile-actions-wrapper");
+    if (isOwner) {
+        container.innerHTML = `
+            <button class="base-btn btn-accent" onclick="document.getElementById('pro-merchant-control-panel').scrollIntoView({behavior:'smooth'});">إدارة متجري الرقمي 📥</button>
+            <button class="base-btn" id="btn-toggle-pro-status">تفعيل وضع المحترفين مجاناً 🚀</button>
+        `;
+        
+        document.getElementById("btn-toggle-pro-status").onclick = async () => {
+            await updateDoc(doc(db, "users", myUid), { isProAccount: true, hasMarketplace: true });
+            alert("مبروك! تم تفعيل وضع المحترفين والمتجر الرقمي بعمولة 0% على حسابك الحين! 🎉");
+            renderProfileData();
         };
-        marketBtn.onclick = () => {
-            marketBtn.classList.add("active"); postsBtn.classList.remove("active");
-            marketView.classList.add("active"); postsView.classList.remove("active");
+    } else {
+        // حساب حالة المتابعة الحالية لمنع التكرار
+        const myFollowers = targetUserData.followers || [];
+        const isFollowing = myFollowers.includes(myUid);
+
+        container.innerHTML = `
+            <button id="btn-follow-trigger" class="base-btn ${isFollowing ? '' : 'btn-accent'}">
+                ${isFollowing ? '🤝 إلغاء المتابعة الحين' : '➕ متابعة الحساب بجدارة'}
+            </button>
+            <button id="btn-direct-message-trigger" class="base-btn" style="background:#0076ff; color:#fff; border:none;">💬 مراسلة مباشرة لايف</button>
+        `;
+
+        // حدث المتابعة وإلغاء المتابعة اللحظي بضغطة واحدة الحين
+        document.getElementById("btn-follow-trigger").onclick = async () => {
+            const userRef = doc(db, "users", targetProfileUid);
+            if (isFollowing) {
+                await updateDoc(userRef, { followers: arrayRemove(myUid) });
+                alert("تم إلغاء المتابعة.");
+            } else {
+                await updateDoc(userRef, { followers: arrayUnion(myUid) });
+                alert("تمت المتابعة بنجاح! 🤝");
+            }
+            renderProfileData();
+        };
+
+        // زرار المراسلة المباشرة: يحولك للشات مع تمرير بيانات المستخدم في الرابط ليفتح الشات عنده فوراً
+        document.getElementById("btn-direct-message-trigger").onclick = () => {
+            window.location.href = `chat.html?target=${targetUserData.uid}&name=${encodeURIComponent(targetUserData.name)}`;
         };
     }
 }
 
-function showToastNotification(msg, icon) {
-    const toast = document.getElementById("app-toast");
-    if(!toast) return;
-    toast.querySelector(".toast-message-text").innerText = msg;
-    toast.classList.add("show");
-    setTimeout(() => toast.classList.remove("show"), 4000);
+/* ================= تشغيل الإعدادات الأساسية (الاسم والبايو) ================= */
+function setupBasicSettingsHandler() {
+    const btn = document.getElementById("btn-save-basic-settings");
+    if (!btn) return;
+    btn.onclick = async () => {
+        const nameInp = document.getElementById("setting-input-name").value.trim();
+        const bioInp = document.getElementById("setting-input-bio").value.trim();
+        if (!nameInp) return;
+
+        btn.innerText = "جاري الحفظ...";
+        await updateDoc(doc(db, "users", myUid), { name: nameInp, bio: bioInp });
+        alert("تم حفظ الاسم والبايو بنجاح لايف! 🎉");
+        btn.innerText = "حفظ الاسم والبايو الحين 💾";
+        renderProfileData();
+    };
+}
+
+/* ================= تشغيل وإصلاح تعديل خدمات المتجر الرقمي ================= */
+function setupMarketplaceHandler() {
+    const btn = document.getElementById("submit-new-service-btn");
+    if (!btn) return;
+    btn.onclick = async () => {
+        const title = document.getElementById("market-service-title").value.trim();
+        const price = document.getElementById("market-service-price").value.trim();
+        if (!title || !price) return;
+
+        btn.innerText = "جاري التحديث...";
+        
+        // تحديث مصفوفة الخدمات داخل حساب المستخدم في الفايربيز
+        await updateDoc(doc(db, "users", myUid), {
+            services: arrayUnion({
+                id: Date.now().toString(),
+                title: title,
+                price: price
+            })
+        });
+
+        document.getElementById("market-service-title").value = "";
+        document.getElementById("market-service-price").value = "";
+        btn.innerText = "نشر وتحديث الخدمة بالمتجر 🚀";
+        alert("تمت إضافة الخدمة لمتجرك بنجاح وعمولة 0%! 💼");
+        renderProfileData();
+    };
+}
+
+/* ================= رص الخدمات الرقمية المضافة لايف ================= */
+function renderMarketServices() {
+    const container = document.getElementById("profile-services-grid-container");
+    const services = targetUserData.services || [];
+
+    if (services.length === 0) {
+        container.innerHTML = `<p class="empty-market-text">لا توجد خدمات معروضة في المتجر حالياً.</p>`;
+        return;
+    }
+
+    container.innerHTML = services.map(srv => `
+        <div class="service-product-card animate-fade-in-up">
+            <h4>${srv.title}</h4>
+            <div class="price-tag-value">${srv.price} SAR</div>
+            <button class="base-btn btn-accent" style="width:100%; margin-top:10px; font-size:12px; height:34px;" onclick="window.location.href='chat.html?target=${targetUserData.uid}&name=${encodeURIComponent(targetUserData.name)}'">طلب الخدمة الحين 📥</button>
+        </div>
+    `).join("");
+}
+
+/* ================= تشغيل النافذة المنبثقة للبروفايل (تكبير وتعديل وحذف الصورة) ================= */
+function setupAvatarModalHandlers() {
+    const avatarImg = document.getElementById("user-profile-avatar-img");
+    const modal = document.getElementById("avatar-actions-modal");
+    
+    if(!avatarImg || !modal) return;
+
+    avatarImg.onclick = () => {
+        // السماح بالتعديل فقط إذا كان الحساب ملكي
+        if (myUid === targetProfileUid) {
+            document.getElementById("modal-avatar-url-input").value = targetUserData.avatar || "";
+            modal.style.display = "flex";
+        } else {
+            // لو بروفايل شخص تاني، نكبر الصورة بس للرؤية الفخمة
+            modal.style.display = "flex";
+            document.getElementById("modal-avatar-url-input").style.display = "none";
+            document.getElementById("btn-save-modal-avatar").style.display = "none";
+            document.getElementById("btn-delete-modal-avatar").style.display = "none";
+        }
+    };
+
+    // حفظ رابط الصورة الجديد
+    document.getElementById("btn-save-modal-avatar").onclick = async () => {
+        const url = document.getElementById("modal-avatar-url-input").value.trim();
+        await updateDoc(doc(db, "users", myUid), { avatar: url });
+        alert("تم تحديث صورة بروفايلك بنجاح! 📸");
+        modal.style.display = "none";
+        renderProfileData();
+    };
+
+    // حذف الصورة والعودة للصورة الافتراضية
+    document.getElementById("btn-delete-modal-avatar").onclick = async () => {
+        if(confirm("هل تريد حذف صورة البروفايل والعودة للافتراضية؟")) {
+            await updateDoc(doc(db, "users", myUid), { avatar: "" });
+            alert("تم حذف الصورة.");
+            modal.style.display = "none";
+            renderProfileData();
+        }
+    };
+}
+
+function setupLogout() {
+    const btn = document.getElementById("btn-logout-action");
+    if(btn) {
+        btn.onclick = async () => {
+            await signOut(auth);
+            window.location.href = "index.html";
+        };
+    }
 }
