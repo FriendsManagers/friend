@@ -1,5 +1,5 @@
 /* ==========================================================================
-   css/home.css - الملف الكامل لصفحة التايملاين والرئيسية
+   css/home.css - الملف الشامل والتناصقي الكامل للكمبيوتر والجوال
    ========================================================================== */
 
 /* 1. الحاوية والتخطيط الرئيسي */
@@ -7,14 +7,22 @@ body {
     background-color: var(--bg-main);
     color: var(--text-primary);
     margin: 0;
-    padding-bottom: 70px; /* مساحة في الأسفل عشان الشريط السفلي للموبايل */
+    padding-bottom: 70px; /* مساحة للشريط السفلي على الموبايل */
 }
 
-.timeline-main-container {
-    max-width: 680px;
-    margin: 80px auto 20px auto; /* مسافة من فوق عشان الهيدر الثابت */
+/* التخطيط الشبكي المطور */
+.timeline-layout-grid {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: 24px;
+    max-width: 960px;
+    margin: 80px auto 20px auto;
     padding: 0 15px;
     box-sizing: border-box;
+}
+
+.timeline-content-feed {
+    width: 100%;
 }
 
 /* 2. الهيدر العلوي الثابت */
@@ -38,7 +46,7 @@ body {
 .header-right-side {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
 }
 
 .platform-brand-logo {
@@ -63,10 +71,10 @@ body {
 .header-left-side {
     display: flex;
     align-items: center;
-    gap: 12px; /* مسافة متناسقة بين الإشعارات، الشات، والبروفايل */
+    gap: 12px;
 }
 
-/* الأزرار الدائرية الجديدة في الهيدر */
+/* أزرار الهيدر الدائرية */
 .action-circle-btn {
     background: var(--bg-main);
     border: 1px solid var(--border-color);
@@ -87,6 +95,26 @@ body {
     transform: translateY(-2px);
 }
 
+/* زر الثلاث شرط (☰) للموبايل */
+.header-menu-toggle {
+    background: transparent;
+    border: none;
+    font-size: 22px;
+    color: var(--text-primary);
+    cursor: pointer;
+    padding: 0;
+    display: none; /* مخفي في الكمبيوتر افتراضياً */
+    align-items: center;
+    justify-content: center;
+    width: 35px;
+    height: 35px;
+    transition: transform 0.2s ease;
+}
+
+.header-menu-toggle:hover {
+    transform: scale(1.1);
+}
+
 .header-profile-avatar {
     width: 38px;
     height: 38px;
@@ -101,7 +129,98 @@ body {
     transform: scale(1.05);
 }
 
-/* 3. صندوق نشر المنشورات */
+/* 3. القوائم الجانبية (Desktop Sidebar & Mobile Drawer) */
+.desktop-sidebar {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 15px;
+    height: fit-content;
+    position: sticky;
+    top: 85px;
+}
+
+.sidebar-menu-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+.sidebar-menu-item a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    color: var(--text-primary);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: var(--radius-sm);
+    transition: background 0.2s, color 0.2s;
+}
+
+.sidebar-menu-item a:hover {
+    background: var(--bg-main);
+    color: var(--accent-color);
+}
+
+/* ستايل الموبايل دراور */
+.mobile-drawer-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 2000;
+    display: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.mobile-drawer-content {
+    position: fixed;
+    top: 0;
+    right: -280px;
+    width: 280px;
+    height: 100%;
+    background: var(--bg-surface);
+    border-left: 1px solid var(--border-color);
+    box-shadow: var(--shadow-lg);
+    z-index: 2001;
+    padding: 20px;
+    box-sizing: border-box;
+    transition: right 0.3s cubic-bezier(0.1, 0.9, 0.2, 1);
+}
+
+.mobile-drawer-overlay.active { display: block; opacity: 1; }
+.mobile-drawer-content.active { right: 0; }
+
+.drawer-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 12px;
+}
+
+.close-drawer-btn {
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.mobile-drawer-content .sidebar-menu-list { margin-top: 20px; }
+.mobile-drawer-content .sidebar-menu-item a { font-size: 15px; padding: 12px 16px; border-radius: var(--radius-md); }
+
+/* 4. صندوق نشر المنشورات */
 .publish-content-card {
     background-color: var(--bg-surface);
     border: 1px solid var(--border-color);
@@ -122,7 +241,6 @@ body {
     height: 45px;
     border-radius: 50%;
     object-fit: cover;
-    background-color: var(--border-color);
 }
 
 #timeline-post-textarea {
@@ -135,11 +253,6 @@ body {
     font-family: inherit;
     font-size: 14px;
     outline: none;
-    padding-top: 5px;
-}
-
-#timeline-post-textarea::placeholder {
-    color: var(--text-secondary);
 }
 
 .publish-lower-actions {
@@ -153,22 +266,19 @@ body {
 .privacy-notice-tag {
     font-size: 12px;
     color: var(--text-secondary);
-    display: flex;
-    align-items: center;
-    gap: 4px;
 }
 
-/* 4. تايملاين تدفق المنشورات */
+/* 5. تايملاين تدفق المنشورات */
 .feed-stream-layout {
     display: flex;
     flex-direction: column;
     gap: 16px;
 }
 
-/* 5. شريط التنقل السفلي للموبايل (مقسم على 4 بالتساوي للريلز) */
+/* 6. شريط التنقل السفلي للموبايل */
 .mobile-fixed-bottom-nav {
     display: grid;
-    grid-template-columns: repeat(4, 1fr); /* تم التوزيع لـ 4 عناصر بالتساوي */
+    grid-template-columns: repeat(4, 1fr);
     gap: 5px;
     position: fixed;
     bottom: 0;
@@ -191,7 +301,6 @@ body {
     color: var(--text-secondary);
     font-size: 11px;
     font-weight: 600;
-    transition: color 0.2s ease;
 }
 
 .bottom-nav-link .nav-icon-span {
@@ -199,18 +308,16 @@ body {
     margin-bottom: 4px;
 }
 
-.bottom-nav-link.active, 
-.bottom-nav-link:hover {
+.bottom-nav-link.active {
     color: var(--accent-color);
 }
 
-/* 6. شاشات الكمبيوتر والتابلت الكبيرة */
-@media (min-width: 769px) {
-    .mobile-fixed-bottom-nav {
-        display: none; /* يختفي الشريط السفلي على الشاشات الكبيرة */
+/* 7. التجاوب مع شاشات الجوال */
+@media (max-width: 768px) {
+    .timeline-layout-grid {
+        grid-template-columns: 1fr;
+        margin-top: 80px;
     }
-    
-    .timeline-main-container {
-        margin-top: 95px;
-    }
+    .desktop-sidebar { display: none; }
+    .header-menu-toggle { display: flex; } /* إظهار الـ 3 شرط على الموبايل فقط */
 }
