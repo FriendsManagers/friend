@@ -2,13 +2,124 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>ريلز ومقاطع Friends</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Friends Reels | ريلز لايف</title>
     <link rel="stylesheet" href="css/variables.css">
     <link rel="stylesheet" href="css/components.css">
+    <style>
+        body {
+            background-color: #000; /* مظهر سينمائي مظلم تماماً للريلز */
+            color: #fff;
+            margin: 0;
+            padding-bottom: 70px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+        .reels-container {
+            max-width: 480px;
+            margin: 0 auto;
+            padding: 15px;
+            box-sizing: border-box;
+        }
+        .publish-reel-card {
+            background: #111;
+            border: 1px solid #222;
+            border-radius: var(--radius-lg);
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+        .reel-stream {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+        .single-reel-card {
+            background: #111;
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            border: 1px solid #222;
+            position: relative;
+        }
+        .reel-video-wrapper video {
+            width: 100%;
+            max-height: 550px;
+            object-fit: cover;
+            display: block;
+            background: #000;
+        }
+        .reel-meta-overlay {
+            padding: 15px;
+            background: linear-gradient(transparent, rgba(0,0,0,0.9));
+        }
+        .reel-author {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+        .reel-author img {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            border: 2px solid var(--accent-color);
+        }
+        .reel-author h4 { margin: 0; font-size: 14px; color: #fff; }
+        .reel-caption { font-size: 13px; color: #ccc; margin: 0; }
+        
+        /* شريط التنقل السفلي */
+        .mobile-fixed-bottom-nav {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px;
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            background-color: #111; border-top: 1px solid #222; padding: 8px 0; z-index: 1000;
+        }
+        .bottom-nav-link {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            text-decoration: none; color: #888; font-size: 11px; font-weight: 600;
+        }
+        .bottom-nav-link .nav-icon-span { font-size: 20px; margin-bottom: 4px; }
+        .bottom-nav-link.active { color: var(--accent-color); }
+    </style>
 </head>
-<body style="background:var(--bg-main); color:var(--text-primary); padding:20px; text-align:center;">
-    <h3>🎬 ريلز ومقاطع الفيديو القصيرة الحرة</h3>
-    <p style="color:var(--text-secondary);">مساحة المشاهدة والتدفق الزمني النظيف قادمة في التحديث القادم بنظام البث المباشر.</p>
-    <button class="base-btn btn-accent" onclick="window.location.href='home.html'">العودة للرئيسية</button>
+<body>
+
+    <main class="reels-container">
+        <h3 style="text-align: center; margin: 15px 0; background: linear-gradient(45deg, var(--accent-color), #4f46e5); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 24px;">🎬 Friends Reels</h3>
+        
+        <!-- صندوق نشر ريلز جديد -->
+        <section class="publish-reel-card">
+            <h4 style="margin: 0 0 10px 0; font-size: 14px; color: var(--accent-color);">🚀 انشر مقطع ريلز الحين</h4>
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <input type="text" id="reel-video-url" class="base-input" placeholder="ضع رابط مقطع الفيديو (MP4)..." style="background:#222; border:1px solid #333; color:#fff;">
+                <input type="text" id="reel-caption-text" class="base-input" placeholder="اكتب وصفاً للمقطع..." style="background:#222; border:1px solid #333; color:#fff;">
+                <button id="btn-publish-reel" class="base-btn btn-accent" style="height: 38px;">نشر المقطع لايف 🎬</button>
+            </div>
+        </section>
+
+        <!-- تدفق فيديوهات الريلز لايف -->
+        <section id="reels-live-stream" class="reel-stream">
+            <p style="text-align: center; color: #666; padding: 20px;">جاري تشفير وتغذية تدفق الريلز لايف...</p>
+        </section>
+    </main>
+
+    <!-- شريط التنقل السفلي المطور -->
+    <nav class="mobile-fixed-bottom-nav">
+        <a href="home.html" class="bottom-nav-link">
+            <span class="nav-icon-span">🏠</span>
+            <span class="nav-text-span">الرئيسية</span>
+        </a>
+        <a href="reels.html" class="bottom-nav-link active">
+            <span class="nav-icon-span">🎬</span>
+            <span class="nav-text-span">الريلز</span>
+        </a>
+        <a href="chat.html" class="bottom-nav-link">
+            <span class="nav-icon-span">💬</span>
+            <span class="nav-text-span">الرسائل</span>
+        </a>
+        <a href="profile.html" class="bottom-nav-link">
+            <span class="nav-icon-span">💼</span>
+            <span class="nav-text-span">متجري</span>
+        </a>
+    </nav>
+
+    <script type="module" src="js/reels.js"></script>
 </body>
 </html>
