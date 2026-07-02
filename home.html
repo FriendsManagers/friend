@@ -1,10 +1,9 @@
-<!-- home.html - النسخة الكاملة الاحترافية بدعم الموبايل والكمبيوتر (2026) -->
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>الرئيسية | Friends لايف</title>
+    <title>الرئيسية | Friends</title>
     <link rel="stylesheet" href="css/variables.css">
     <link rel="stylesheet" href="css/animations.css">
     <link rel="stylesheet" href="css/components.css">
@@ -12,13 +11,12 @@
 </head>
 <body class="animate-fade-in-up">
 
-    <!-- شريط التنبيهات الذكي -->
     <div id="app-toast" class="custom-toast">
         <div class="toast-icon-wrapper" style="background: var(--accent-light);"><span class="toast-icon">✨</span></div>
         <div class="toast-message-text">جاري معالجة البيانات...</div>
     </div>
 
-    <!-- 📱 نافذة القائمة الجانبية المنزلقة للموبايل (Drawer) -->
+    <!-- القائمة الجانبية المنزلقة الموحدة (للكمبيوتر والجوال) -->
     <div id="mobile-overlay" class="mobile-drawer-overlay"></div>
     <div id="mobile-drawer" class="mobile-drawer-content">
         <div class="drawer-header">
@@ -31,95 +29,133 @@
             <li class="sidebar-menu-item"><a href="groups.html">👥 المجموعات المشتركة</a></li>
             <li class="sidebar-menu-item"><a href="videos.html">📺 منصة الفيديوهات</a></li>
             <li class="sidebar-menu-item"><a href="saved.html">🔖 العناصر المحفوظة</a></li>
-            <li class="sidebar-menu-item"><a href="profile.html">💼 متجري الرقمي</a></li>
+            <li class="sidebar-menu-item"><a href="store.html">🛍️ المتجر الرقمي</a></li>
         </ul>
     </div>
 
     <!-- الهيدر العلوي المطور -->
     <header class="main-platform-header">
         <div class="header-right-side">
-            <!-- زر الثلاث شرط للموبايل -->
-            <button id="open-menu-trigger" class="header-menu-toggle" title="القائمة">☰</button>
+            <button id="open-menu-trigger" class="header-menu-toggle">☰</button>
             <span class="platform-brand-logo">Friends</span>
-            <div class="algorithm-badge">⏱️ زمني 100%</div>
+            <div class="algorithm-badge">⏱️ تدفق زمني حُر 100%</div>
         </div>
         <div class="header-left-side">
-            <button class="action-circle-btn" onclick="window.location.href='notifications.html'" title="الإشعارات الحية">🔔</button>
-            <button class="action-circle-btn" onclick="window.location.href='chat.html'" title="المحادثات والدعم">💬</button>
-            <img src="https://www.gravatar.com/avatar/?d=mp" id="header-user-avatar" class="header-profile-avatar" onclick="window.location.href='profile.html'" title="ملفي الشخصي">
+            <button class="action-circle-btn" onclick="window.location.href='notifications.html'">🔔</button>
+            <button class="action-circle-btn" onclick="window.location.href='chat.html'">💬</button>
+            <img src="https://www.gravatar.com/avatar/?d=mp" id="header-user-avatar" class="header-profile-avatar" onclick="window.location.href='profile.html'">
         </div>
     </header>
 
-    <!-- شبكة التوزيع الجدارية (السايدبار + التايملاين) -->
-    <div class="timeline-layout-grid">
-        
-        <!-- 🧭 القائمة الجانبية الثابتة للكمبيوتر -->
-        <aside class="desktop-sidebar">
-            <ul class="sidebar-menu-list">
-                <li class="sidebar-menu-item"><a href="home.html">🏠 الرئيسية</a></li>
-                <li class="sidebar-menu-item"><a href="friends.html">🤝 الأصدقاء والمتابعين</a></li>
-                <li class="sidebar-menu-item"><a href="groups.html">👥 المجموعات المشتركة</a></li>
-                <li class="sidebar-menu-item"><a href="videos.html">📺 منصة الفيديوهات</a></li>
-                <li class="sidebar-menu-item"><a href="saved.html">🔖 العناصر المحفوظة</a></li>
-                <li class="sidebar-menu-item"><a href="profile.html">💼 متجري الرقمي</a></li>
-            </ul>
-        </aside>
-
-        <!-- حاوية التايملاين والمحتوى الرئيسية -->
+    <div class="timeline-layout-grid single-column-layout">
         <main class="timeline-content-feed">
-            <!-- صندوق نشر المحتوى -->
+            <!-- صندوق النشر المتطور -->
             <section class="publish-content-card">
                 <div class="publish-upper-row">
-                    <img src="https://www.gravatar.com/avatar/?d=mp" id="publish-box-avatar" class="box-user-avatar">
-                    <textarea id="timeline-post-textarea" placeholder="شارك أفكارك الحين.. محتواك سيصل لـ 100% بدون حجب! 🚀"></textarea>
+                    <img src="https://www.gravatar.com/avatar/?d=mp" class="box-user-avatar">
+                    <textarea id="timeline-post-textarea" placeholder="شارك أفكارك وإبداعاتك الحين بدون قيود خوارزمية... 🚀"></textarea>
                 </div>
                 <div class="publish-lower-actions">
                     <div class="privacy-notice-tag">🔒 بيئة تصفح نظيفة ومحمية</div>
-                    <button id="timeline-publish-submit-btn" class="base-btn btn-accent btn-pulse" style="padding: 6px 20px; font-size: 13px;">
-                        نشر المنشور فوراً
+                    <button id="timeline-publish-submit-btn" class="base-btn btn-accent" style="padding: 6px 20px; font-size: 13px;">
+                        نشر المنشور
                     </button>
                 </div>
             </section>
 
-            <!-- تايملاين تدفق المنشورات والإعلانات لايف -->
+            <!-- تدفق المنشورات الحية -->
             <section id="timeline-live-feed-wrapper" class="feed-stream-layout">
-                <div style="text-align: center; padding: 40px; color: var(--text-secondary);">جاري فتح اتصال زمني آمن...</div>
+                <!-- يتم توليد المنشورات ديناميكياً بواسطة JS -->
             </section>
         </main>
     </div>
 
-    <!-- شريط التنقل السفلي المطور للموبايل -->
+    <!-- شريط التنقل السفلي للموبايل -->
     <nav class="mobile-fixed-bottom-nav">
         <a href="home.html" class="bottom-nav-link active"><span class="nav-icon-span">🏠</span><span class="nav-text-span">الرئيسية</span></a>
         <a href="reels.html" class="bottom-nav-link"><span class="nav-icon-span">🎬</span><span class="nav-text-span">الريلز</span></a>
         <a href="chat.html" class="bottom-nav-link"><span class="nav-icon-span">💬</span><span class="nav-text-span">الرسائل</span></a>
-        <a href="profile.html" class="bottom-nav-link"><span class="nav-icon-span">💼</span><span class="nav-text-span">متجري</span></a>
+        <a href="store.html" class="bottom-nav-link"><span class="nav-icon-span">🛍️</span><span class="nav-text-span">المتجر</span></a>
     </nav>
 
-    <script type="module" src="js/posts.js"></script>
-    
-    <!-- محرك تشغيل فتح وإغلاق القائمة المنزلقة للموبايل -->
-    <script>
+    <script type="module">
+        // كود تشغيل القائمة المنزلقة عند الضغط على الـ 3 شرط فقط
         const openBtn = document.getElementById('open-menu-trigger');
         const closeBtn = document.getElementById('close-menu-trigger');
         const overlay = document.getElementById('mobile-overlay');
         const drawer = document.getElementById('mobile-drawer');
 
         function toggleMenu(open) {
-            if(open) {
-                overlay.classList.add('active');
-                drawer.classList.add('active');
-            } else {
-                overlay.classList.remove('active');
-                drawer.classList.remove('active');
-            }
+            if(open) { overlay.classList.add('active'); drawer.classList.add('active'); }
+            else { overlay.classList.remove('active'); drawer.classList.remove('active'); }
         }
 
-        if(openBtn && closeBtn && overlay && drawer) {
-            openBtn.onclick = () => toggleMenu(true);
-            closeBtn.onclick = () => toggleMenu(false);
-            overlay.onclick = () => toggleMenu(false);
+        openBtn.onclick = () => toggleMenu(true);
+        closeBtn.onclick = () => toggleMenu(false);
+        overlay.onclick = () => toggleMenu(false);
+
+        // محاكاة نظام المنشورات التفاعلي محلياً للعرض
+        const feed = document.getElementById('timeline-live-feed-wrapper');
+        const postText = document.getElementById('timeline-post-textarea');
+        const submitBtn = document.getElementById('timeline-publish-submit-btn');
+
+        let postsData = [
+            { id: 1, author: "سارة أحمد", content: "منصات التواصل الحرة هي المستقبل الرقمي الآمن لبياناتنا.", likes: 12, liked: false, saved: false, comments: [] },
+            { id: 2, author: "عبد الله محمد", content: "التجربة الأولى هنا ممتازة وسرعة التصفح وتدفق البيانات مبهر حقاً!", likes: 24, liked: false, saved: false, comments: [] }
+        ];
+
+        function renderPosts() {
+            feed.innerHTML = '';
+            postsData.forEach(post => {
+                const card = document.createElement('div');
+                card.className = 'publish-content-card';
+                card.style.position = 'relative';
+                card.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                        <div style="display:flex; gap:10px; align-items:center;">
+                            <img src="https://www.gravatar.com/avatar/${post.id}?d=mp" class="box-user-avatar" style="width:35px; height:35px;">
+                            <strong style="font-size:14px;">${post.author}</strong>
+                        </div>
+                        <button onclick="window.deletePost(${post.id})" class="action-circle-btn" style="width:30px; height:30px; font-size:12px; border:none; background:rgba(239,68,68,0.1); color:#ef4444;" title="حذف">🗑️</button>
+                    </div>
+                    <p style="font-size:14px; color:var(--text-primary); line-height:1.6; margin:10px 0;">${post.content}</p>
+                    <div style="display:flex; gap:15px; border-top:1px solid var(--border-color); padding-top:10px; margin-top:10px;">
+                        <button onclick="window.likePost(${post.id})" style="background:none; border:none; cursor:pointer; font-size:13px; color:${post.liked ? '#ef4444' : 'var(--text-secondary)'};">❤️ ${post.likes}</button>
+                        <button onclick="window.savePost(${post.id})" style="background:none; border:none; cursor:pointer; font-size:13px; color:${post.saved ? '#f59e0b' : 'var(--text-secondary)'};">🔖 ${post.saved ? 'محفوظ' : 'حفظ'}</button>
+                    </div>
+                    <div style="margin-top:12px; background:var(--bg-main); padding:10px; border-radius:8px;">
+                        <div style="display:flex; gap:8px;">
+                            <input type="text" id="cmt-input-${post.id}" placeholder="اكتب تعليقاً..." style="flex:1; background:var(--bg-surface); border:1px solid var(--border-color); border-radius:4px; padding:4px 8px; font-size:12px; color:var(--text-primary); outline:none;">
+                            <button onclick="window.addComment(${post.id})" class="base-btn btn-accent" style="padding:4px 10px; font-size:11px;">تعليق</button>
+                        </div>
+                        <div style="margin-top:8px; display:flex; flex-direction:column; gap:6px;">
+                            ${post.comments.map((c, idx) => `
+                                <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-surface); padding:6px; border-radius:4px; font-size:12px;">
+                                    <span>${c}</span>
+                                    <button onclick="window.deleteComment(${post.id}, ${idx})" style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:10px;">🗑️</button>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+                feed.appendChild(card);
+            });
         }
+
+        submitBtn.onclick = () => {
+            if(!postText.value.trim()) return;
+            postsData.unshift({ id: Date.now(), author: "أنت (مستخدم مسجل)", content: postText.value, likes: 0, liked: false, saved: false, comments: [] });
+            postText.value = '';
+            renderPosts();
+        };
+
+        window.deletePost = (id) => { postsData = postsData.filter(p => p.id !== id); renderPosts(); };
+        window.likePost = (id) => { const p = postsData.find(p => p.id === id); p.liked = !p.liked; p.liked ? p.likes++ : p.likes--; renderPosts(); };
+        window.savePost = (id) => { const p = postsData.find(p => p.id === id); p.saved = !p.saved; renderPosts(); };
+        window.addComment = (id) => { const inp = document.getElementById(`cmt-input-${id}`); if(!inp.value.trim()) return; postsData.find(p => p.id === id).comments.push(inp.value); renderPosts(); };
+        window.deleteComment = (id, idx) => { postsData.find(p => p.id === id).comments.splice(idx, 1); renderPosts(); };
+
+        renderPosts();
     </script>
 </body>
 </html>
