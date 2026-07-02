@@ -1,4 +1,3 @@
-<!-- profile.html -->
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -11,32 +10,26 @@
     <style>
         body { background: var(--bg-main); color: var(--text-primary); margin: 0; padding-bottom: 80px; }
         .insta-profile-container { max-width: 600px; margin: 30px auto; padding: 20px; box-sizing: border-box; }
-        
-        /* تصميم الهيدر العلوي لإنستغرام */
         .insta-header { display: flex; align-items: center; gap: 30px; margin-bottom: 30px; border-bottom: 1px solid var(--border-color); padding-bottom: 24px; }
         .insta-avatar-side img { width: 90px; height: 90px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border-color); cursor: pointer; }
         .insta-meta-side { flex: 1; }
         .insta-username-row { display: flex; align-items: center; gap: 15px; margin-bottom: 12px; }
         .insta-username-row h2 { margin: 0; font-size: 20px; font-weight: 400; }
         .insta-bio-text { margin: 5px 0 0 0; font-size: 14px; color: var(--text-secondary); }
-        
-        /* شبكة المنتجات الرقمية (Grid) */
-        .insta-tabs-title { text-align: center; font-weight: bold; font-size: 13px; letter-spacing: 1px; text-transform: uppercase; border-top: 1px solid var(--border-color); padding-top: 12px; margin-bottom: 16px; color: var(--text-secondary); }
+        .insta-tabs-title { text-align: center; font-weight: bold; font-size: 13px; letter-spacing: 1px; border-top: 1px solid var(--border-color); padding-top: 12px; margin-bottom: 16px; color: var(--text-secondary); }
         .insta-services-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
-        .insta-service-card { background: var(--bg-surface); aspect-ratio: 1 / 1; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 12px; border: 1px solid var(--border-color); text-align: center; box-sizing: border-box; font-size: 12px; overflow: hidden; border-radius: var(--radius-md); box-shadow: var(--shadow-sm); }
-        
+        .insta-service-card { background: var(--bg-surface); aspect-ratio: 1 / 1; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 12px; border: 1px solid var(--border-color); text-align: center; box-sizing: border-box; font-size: 12px; border-radius: var(--radius-md); }
         .profile-avatar-modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.6); z-index: 2000; justify-content: center; align-items: center; backdrop-filter: blur(4px); }
         .modal-content-box { background: var(--bg-surface); padding: 24px; border-radius: var(--radius-lg); max-width: 400px; width: 90%; text-align: center; border:1px solid var(--border-color); }
     </style>
 </head>
 <body>
 
-    <!-- المودال المنبثق لتحديث رابط الصورة الشخصية -->
     <div id="avatar-actions-modal" class="profile-avatar-modal">
         <div class="modal-content-box">
             <img src="" id="modal-image-preview" style="width:100px; height:100px; border-radius:50%; object-fit:cover; margin-bottom:12px; border:2px solid var(--accent-color);">
             <h4>تحديث صورة الحساب</h4>
-            <input type="text" id="modal-avatar-url-input" class="base-input" placeholder="ضع رابط الصورة المباشر الجديد الحين..." style="margin-bottom:12px; text-align:left; direction:ltr;">
+            <input type="text" id="modal-avatar-url-input" class="base-input" placeholder="ضع رابط الصورة المباشر الجديد..." style="margin-bottom:12px; text-align:left; direction:ltr;">
             <div style="display:flex; gap:10px;">
                 <button id="btn-save-modal-avatar" class="base-btn btn-accent" style="flex:1;">حفظ 💾</button>
                 <button onclick="document.getElementById('avatar-actions-modal').style.display='none'" class="base-btn" style="flex:1;">إلغاء</button>
@@ -45,7 +38,7 @@
     </div>
 
     <div class="insta-profile-container">
-        <button class="base-btn" onclick="window.location.href='home.html'" style="margin-bottom:20px; background:none; border:1px solid var(--border-color); color:var(--text-primary); cursor:pointer;">➔ العودة للرئيسية</button>
+        <button class="base-btn" onclick="window.location.href='home.html'" style="margin-bottom:20px; background:none; border:1px solid var(--border-color); color:var(--text-primary);">➔ العودة للرئيسية</button>
         
         <header class="insta-header">
             <div class="insta-avatar-side">
@@ -54,41 +47,35 @@
             <div class="insta-meta-side">
                 <div class="insta-username-row">
                     <h2 id="profile-display-name">جاري التحميل...</h2>
-                    <button class="base-btn" onclick="const s = document.getElementById('settings-card'); s.style.display = s.style.display === 'none' ? 'block' : 'none';" style="height:28px; padding:0 12px; font-size:12px; background:none; border:1px solid var(--border-color); color:var(--text-primary); cursor:pointer;">⚙️ تعديل الحساب</button>
+                    <button class="base-btn" onclick="const s = document.getElementById('settings-card'); s.style.display = s.style.display === 'none' ? 'block' : 'none';" style="height:28px; padding:0 12px; font-size:12px; background:none; border:1px solid var(--border-color); color:var(--text-primary);">⚙️ تعديل الحساب</button>
                 </div>
                 <p id="profile-display-bio" class="insta-bio-text">لا يوجد وصف حالياً.</p>
             </div>
         </header>
 
-        <!-- لوحة تعديل الإعدادات والبيانات - شغال لايف -->
         <section id="settings-card" style="display:none; background:var(--bg-surface); border:1px solid var(--border-color); padding:16px; border-radius:var(--radius-md); margin-bottom:20px;">
             <h4 style="margin-top:0; color:var(--accent-color);">⚙️ إعدادات الحساب الشخصي</h4>
             <div style="display:flex; flex-direction:column; gap:10px;">
-                <input type="text" id="setting-input-name" class="base-input" placeholder="الاسم الكامل" style="background:var(--bg-main); color:var(--text-primary); border:1px solid var(--border-color); padding:8px; border-radius:6px;">
-                <input type="text" id="setting-input-bio" class="base-input" placeholder="الوصف الشخصي / البايو" style="background:var(--bg-main); color:var(--text-primary); border:1px solid var(--border-color); padding:8px; border-radius:6px;">
+                <input type="text" id="setting-input-name" class="base-input" placeholder="الاسم الكامل">
+                <input type="text" id="setting-input-bio" class="base-input" placeholder="الوصف الشخصي / البايو">
                 <div style="display:flex; gap:10px;">
-                    <button id="btn-save-basic-settings" class="base-btn btn-accent" style="flex:1;">حفظ التعديلات الحين 💾</button>
+                    <button id="btn-save-basic-settings" class="base-btn btn-accent" style="flex:1;">حفظ التعديلات 💾</button>
                     <button class="base-btn" onclick="document.getElementById('settings-card').style.display='none'" style="flex:1;">إغلاق</button>
                 </div>
             </div>
         </section>
 
-        <!-- إضافة منتجات المتجر الرقمي للمستخدم صاحب الحساب -->
         <section id="pro-merchant-control-panel" style="background:var(--bg-surface); border:1px solid var(--border-color); padding:16px; border-radius:var(--radius-md); margin-bottom:20px; display:none;">
             <h4 style="margin-top:0; color:var(--accent-color);">📥 إضافة خدمة جديدة للمتجر الرقمي</h4>
             <div style="display:flex; gap:10px; flex-direction:column;">
-                <input type="text" id="market-service-title" class="base-input" placeholder="عنوان الخدمة أو المنتج الرقمي" style="background:var(--bg-main); color:var(--text-primary); border:1px solid var(--border-color); padding:8px; border-radius:6px;">
-                <input type="number" id="market-service-price" class="base-input" placeholder="السعر (SAR)" style="background:var(--bg-main); color:var(--text-primary); border:1px solid var(--border-color); padding:8px; border-radius:6px;">
+                <input type="text" id="market-service-title" class="base-input" placeholder="عنوان الخدمة أو المنتج">
+                <input type="number" id="market-service-price" class="base-input" placeholder="السعر (SAR)">
                 <button id="submit-new-service-btn" class="base-btn btn-accent" style="height:36px;">نشر وتحديث في المتجر فوراً</button>
             </div>
         </section>
 
         <div id="store-section-tab" class="insta-tabs-title">💼 المعروضات والخدمات الرقمية حرة وبدون عمولة</div>
-        
-        <!-- شبكة عرض المنتجات والخدمات -->
-        <div class="insta-services-grid" id="profile-services-grid-container">
-            <!-- يتم تعبئتها تلقائياً عبر الفايربيز -->
-        </div>
+        <div class="insta-services-grid" id="profile-services-grid-container"></div>
     </div>
 
     <script type="module" src="js/profile.js"></script>
