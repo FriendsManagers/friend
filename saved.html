@@ -1,3 +1,4 @@
+<!-- saved.html -->
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -6,12 +7,22 @@
     <title>العناصر المحفوظة | Friends</title>
     <link rel="stylesheet" href="css/variables.css">
     <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/home.css">
 </head>
-<body style="background:var(--bg-main); color:var(--text-primary); padding:20px;">
-    <div style="max-width:500px; margin:40px auto; background:var(--bg-surface); padding:25px; border-radius:var(--radius-lg); border:1px solid var(--border-color); text-align:center;">
-        <h3>🔖 المنشورات والخدمات المحفوظة</h3>
-        <p style="color:var(--text-secondary); padding:20px;">لم تقم بحفظ أي منشورات أو خدمات رقمية حتى الآن.</p>
-        <button class="base-btn btn-accent" style="width:100%;" onclick="window.location.href='home.html'">استكشاف التايملاين</button>
+<body style="background:var(--bg-main); color:var(--text-primary);">
+    <header class="main-platform-header">
+        <div class="header-right-side">
+            <button class="action-circle-btn" onclick="window.location.href='home.html'">⬅️</button>
+            <span class="platform-brand-logo">🔖 العناصر المحفوظة</span>
+        </div>
+    </header>
+
+    <div class="timeline-layout-grid" style="margin-top:90px; max-width:650px;">
+        <div id="saved-items-container" class="feed-stream-layout">
+            <p style="text-align:center; color:var(--text-secondary); padding:20px;">جاري سحب المحفوظات السحابية...</p>
+        </div>
     </div>
+    
+    <script type="module" src="js/saved.js"></script>
 </body>
 </html>
