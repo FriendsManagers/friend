@@ -17,7 +17,6 @@ onAuthStateChanged(auth, async (user) => {
     const urlParams = new URLSearchParams(window.location.search);
     targetProfileUid = urlParams.get('id') || myUid;
 
-    // توجيه تلقائي ذكي إذا ضغط المستخدم على زر متجري في الـ Nav
     if(window.location.hash === "#store") {
         setTimeout(() => document.getElementById("store-section-tab").scrollIntoView({behavior:'smooth'}), 500);
     }
@@ -35,14 +34,12 @@ async function renderProfileData() {
 
     document.getElementById("user-profile-avatar-img").src = data.avatar || "https://www.gravatar.com/avatar/?d=mp";
     document.getElementById("profile-display-name").innerText = data.name || "عضو مجتمعي حُر";
-    document.getElementById("profile-display-bio").innerText = data.bio || "لا يوجد وصف أو بايو حتى الآن.";
+    document.getElementById("profile-display-bio").innerText = data.bio || "لا يوجد وصف حتى الآن.";
 
     if (myUid === targetProfileUid) {
         document.getElementById("setting-input-name").value = data.name || "";
         document.getElementById("setting-input-bio").value = data.bio || "";
         document.getElementById("pro-merchant-control-panel").style.display = "block";
-    } else {
-        document.getElementById("pro-merchant-control-panel").style.display = "none";
     }
 
     const container = document.getElementById("profile-services-grid-container");
@@ -69,10 +66,14 @@ function setupBasicSettingsHandler() {
         if(!name) return;
         btn.innerText = "جاري الحفظ...";
         await updateDoc(doc(db, "users", myUid), { name: name, bio: bio });
-        alert("تم تحديث الاسم والبيانات بنجاح لايف! 🎉");
+        
+        // تحديث الواجهة لايف فوراً
+        document.getElementById("profile-display-name").innerText = name;
+        document.getElementById("profile-display-bio").innerText = bio || "لا يوجد وصف حتى الآن.";
+        
+        alert("تم تحديث الاسم والبيانات بنجاح! 🎉");
         document.getElementById("settings-card").style.display = 'none';
-        btn.innerText = "حفظ التعديلات الحين 💾";
-        renderProfileData();
+        btn.innerText = "حفظ التعديلات 💾";
     };
 }
 
