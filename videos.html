@@ -6,15 +6,27 @@
     <title>منصة الفيديوهات | Friends</title>
     <link rel="stylesheet" href="css/variables.css">
     <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/home.css">
 </head>
-<body style="background:var(--bg-main); color:var(--text-primary); padding:20px; font-family:inherit;">
-    <div style="max-width:800px; margin:40px auto; background:var(--bg-surface); padding:30px; border-radius:var(--radius-lg); border:1px solid var(--border-color); text-align:center;">
-        <h2>📺 منصة الفيديوهات الحرة المباشرة</h2>
-        <p style="color:var(--text-secondary); margin-bottom:24px;">هنا يتم رفع وبث مقاطع الفيديو الطويلة بجودة عالية وبدون قيود خوارزمية.</p>
-        <div style="border:2px dashed var(--border-color); padding:40px; border-radius:var(--radius-md); color:var(--text-secondary);">
-            🎥 قسم الميديا والرفع السحابي جاهز للربط في الفايربيز
+<body style="background:var(--bg-main); color:var(--text-primary); padding:20px;">
+    <div style="max-width:700px; margin:20px auto; background:var(--bg-surface); padding:20px; border-radius:var(--radius-lg); border:1px solid var(--border-color);">
+        <h3 style="color:var(--accent-color);">📺 منصة مشاركة الفيديوهات لايف</h3>
+        
+        <section style="background:var(--bg-main); padding:15px; border-radius:var(--radius-md); margin-bottom:20px; border:1px solid var(--border-color);">
+            <h4>📤 نشر مقطع فيديو جديد</h4>
+            <div style="display:flex; flex-direction:column; gap:10px;">
+                <input type="text" id="video-title-input" class="base-input" placeholder="عنوان مقطع الفيديو">
+                <input type="text" id="video-url-input" class="base-input" placeholder="رابط مقطع الفيديو المباشر (MP4)">
+                <button id="btn-publish-video" class="base-btn btn-accent" style="height:36px;">نشر الفيديو</button>
+            </div>
+        </section>
+
+        <div id="videos-stream-container" style="display:flex; flex-direction:column; gap:20px;">
+            <p style="text-align:center; color:var(--text-secondary);">جاري سحب تدفق الفيديو المباشر...</p>
         </div>
-        <button class="base-btn btn-accent" style="margin-top:20px;" onclick="window.location.href='home.html'">العودة للتايملاين</button>
+        
+        <button class="base-btn" style="width:100%; margin-top:20px;" onclick="window.location.href='home.html'">العودة للرئيسية</button>
     </div>
+    <script type="module" src="js/videos.js"></script>
 </body>
 </html>
